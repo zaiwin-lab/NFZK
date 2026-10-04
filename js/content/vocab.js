@@ -1,0 +1,74 @@
+/* Word Bridge dictionary — Maths English words with Bahasa Malaysia support.
+   role decides the colour family and icon, so meaning never relies on colour alone:
+     vocab  (blue)   📘 English word
+     action (purple) ⚡ Maths action word
+     value  (green)  🔢 Important number or value word
+     unit   (amber)  📏 Units, time and measurement
+   `bm` is the full first-exposure support, `short` is the faded second exposure.
+   Explanations describe the word only. They never solve a question. */
+window.FMQ = window.FMQ || {};
+
+FMQ.vocabRoles = {
+  vocab:  { label: 'English word', icon: '📘' },
+  action: { label: 'Maths action', icon: '⚡' },
+  value:  { label: 'Number word',  icon: '🔢' },
+  unit:   { label: 'Unit / time',  icon: '📏' }
+};
+
+FMQ.vocab = {
+  'total':          { bm: 'jumlah', short: 'jumlah', role: 'action', explain: 'Total means everything put together.', explainBm: 'Jumlah bermaksud semua dicampurkan bersama.' },
+  'altogether':     { bm: 'jumlah keseluruhan', short: 'keseluruhan', role: 'action', explain: 'Altogether means all of them together.', explainBm: 'Kesemuanya sekali.' },
+  'remaining':      { bm: 'baki / yang tinggal', short: 'baki', role: 'action', explain: 'Remaining means what is still there after some is used or taken away.', explainBm: 'Yang masih ada selepas sebahagian digunakan atau diambil.' },
+  'left':           { bm: 'baki / yang tinggal', short: 'baki', role: 'action', explain: 'In Maths, "left" often means what is still there after some is used.', explainBm: 'Dalam Matematik, "left" selalunya bermaksud yang masih ada.' },
+  'spends':         { bm: 'membelanjakan', short: 'belanja', role: 'action', explain: 'Spends means uses money to pay for something.', explainBm: 'Menggunakan wang untuk membayar sesuatu.' },
+  'buys':           { bm: 'membeli', short: 'beli', role: 'action', explain: 'Buys means pays money to get something.', explainBm: 'Membayar wang untuk mendapat sesuatu.' },
+  'pays':           { bm: 'membayar', short: 'bayar', role: 'action', explain: 'Pays means gives money to the shop.', explainBm: 'Memberi wang kepada kedai.' },
+  'costs':          { bm: 'berharga', short: 'harga', role: 'value', explain: 'Costs tells us the price of something.', explainBm: 'Harga sesuatu barang.' },
+  'change':         { bm: 'baki wang', short: 'baki wang', role: 'value', explain: 'Change is the money the shop gives back to you.', explainBm: 'Wang yang dipulangkan oleh kedai kepada kita.' },
+  'saves':          { bm: 'menyimpan', short: 'simpan', role: 'action', explain: 'Saves means keeps money and does not spend it.', explainBm: 'Menyimpan wang dan tidak membelanjakannya.' },
+  'each':           { bm: 'setiap / masing-masing', short: 'setiap', role: 'vocab', explain: 'Each means every one, one by one.', explainBm: 'Setiap satu.' },
+  'difference':     { bm: 'perbezaan', short: 'beza', role: 'action', explain: 'In Maths, “difference” asks us to compare two numbers.', explainBm: 'Dalam Matematik, “perbezaan” meminta kita membandingkan dua nombor.' },
+  'how many more':  { bm: 'berapa lebih banyak', short: 'lebih banyak', role: 'action', explain: 'How many more asks how much bigger one amount is than another.', explainBm: 'Berapa banyak satu nilai lebih besar daripada nilai lain.' },
+  'more than':      { bm: 'lebih daripada', short: 'lebih', role: 'vocab', explain: 'More than means bigger than.', explainBm: 'Lebih besar daripada.' },
+  'less than':      { bm: 'kurang daripada', short: 'kurang', role: 'vocab', explain: 'Less than means smaller than.', explainBm: 'Lebih kecil daripada.' },
+  'than':           { bm: 'daripada', short: 'daripada', role: 'vocab', explain: '“Than” is used when we compare two things.', explainBm: 'Digunakan apabila membandingkan dua perkara.' },
+  'equal':          { bm: 'sama dengan', short: 'sama', role: 'vocab', explain: 'Equal means the same amount.', explainBm: 'Nilai yang sama.' },
+  'equal parts':    { bm: 'bahagian yang sama besar', short: 'sama besar', role: 'vocab', explain: 'Equal parts are pieces that are all the same size.', explainBm: 'Bahagian yang semuanya sama saiz.' },
+  'shared equally': { bm: 'dikongsi sama rata', short: 'sama rata', role: 'action', explain: 'Shared equally means everyone gets the same amount.', explainBm: 'Setiap orang mendapat jumlah yang sama.' },
+  'holds':          { bm: 'mengisi / memuatkan', short: 'muat', role: 'vocab', explain: 'Holds tells us how much can fit inside.', explainBm: 'Berapa banyak boleh dimuatkan.' },
+  'trays':          { bm: 'dulang', short: 'dulang', role: 'vocab', explain: 'Trays are flat boxes for carrying things like eggs.', explainBm: 'Bekas leper untuk membawa barang seperti telur.' },
+  'value':          { bm: 'nilai', short: 'nilai', role: 'value', explain: 'The value of a digit is how much it is worth in that place.', explainBm: 'Nilai digit bergantung pada tempatnya.' },
+  'digit':          { bm: 'digit', short: 'digit', role: 'value', explain: 'A digit is one of 0, 1, 2 … 9.', explainBm: 'Salah satu daripada 0 hingga 9.' },
+  'largest':        { bm: 'paling besar', short: 'terbesar', role: 'vocab', explain: 'Largest means the biggest of all.', explainBm: 'Yang paling besar.' },
+  'cuts off':       { bm: 'memotong', short: 'potong', role: 'action', explain: 'Cuts off means takes a piece away by cutting.', explainBm: 'Memotong dan mengambil sebahagian.' },
+  'shaded':         { bm: 'berlorek', short: 'lorek', role: 'vocab', explain: 'Shaded parts are the coloured parts.', explainBm: 'Bahagian yang diwarnakan.' },
+  'percentage':     { bm: 'peratus', short: 'peratus', role: 'value', explain: 'Percentage means “out of 100”.', explainBm: 'Peratus bermaksud “daripada 100”.' },
+  'afternoon':      { bm: 'tengah hari / petang', short: 'petang', role: 'unit', explain: 'Afternoon is the time after 12 noon.', explainBm: 'Waktu selepas jam 12 tengah hari.' },
+  'leaves':         { bm: 'bertolak', short: 'bertolak', role: 'action', explain: 'Leaves means goes away from a place.', explainBm: 'Pergi dari sesuatu tempat.' },
+  'closes':         { bm: 'ditutup', short: 'tutup', role: 'unit', explain: 'Closes means stops being open.', explainBm: 'Tidak lagi dibuka.' },
+  'starts':         { bm: 'bermula', short: 'mula', role: 'unit', explain: 'Starts means begins.', explainBm: 'Mula.' },
+  'begins':         { bm: 'bermula', short: 'mula', role: 'unit', explain: 'Begins means starts.', explainBm: 'Mula.' },
+  'ends':           { bm: 'tamat', short: 'tamat', role: 'unit', explain: 'Ends means finishes.', explainBm: 'Habis.' },
+  'lasts':          { bm: 'berlangsung selama', short: 'selama', role: 'unit', explain: 'Lasts tells us how long something goes on.', explainBm: 'Berapa lama sesuatu berlaku.' },
+  'duration':       { bm: 'tempoh masa', short: 'tempoh', role: 'unit', explain: 'Duration is how long something takes, from start to end.', explainBm: 'Berapa lama sesuatu berlaku dari mula hingga tamat.' },
+  'how long':       { bm: 'berapa lama', short: 'berapa lama', role: 'unit', explain: 'How long asks about the amount of time (or length).', explainBm: 'Bertanya tentang tempoh masa (atau panjang).' },
+  'convert':        { bm: 'tukar', short: 'tukar', role: 'action', explain: 'Convert means change to a different unit.', explainBm: 'Tukar kepada unit yang lain.' },
+  'journey':        { bm: 'perjalanan', short: 'perjalanan', role: 'vocab', explain: 'A journey is a trip from one place to another.', explainBm: 'Perjalanan dari satu tempat ke tempat lain.' },
+  'takes':          { bm: 'mengambil masa', short: 'ambil masa', role: 'unit', explain: 'Here, takes means how much time is needed.', explainBm: 'Masa yang diperlukan.' },
+  'arrive':         { bm: 'tiba', short: 'tiba', role: 'unit', explain: 'Arrive means reach the place.', explainBm: 'Sampai ke tempat itu.' },
+  'pours out':      { bm: 'menuang keluar', short: 'tuang', role: 'action', explain: 'Pours out means lets some liquid flow out.', explainBm: 'Menuang sebahagian air keluar.' },
+  'mass':           { bm: 'jisim', short: 'jisim', role: 'unit', explain: 'Mass is how heavy something is.', explainBm: 'Berapa berat sesuatu benda.' },
+  'perimeter':      { bm: 'perimeter', short: 'perimeter', role: 'unit', explain: 'Perimeter is the distance all the way around the outside edge.', explainBm: 'Jarak mengelilingi tepi luar sesuatu bentuk.' },
+  'around':         { bm: 'sekeliling', short: 'keliling', role: 'vocab', explain: 'Around means all along the outside edge.', explainBm: 'Di sepanjang tepi luar.' },
+  'fence':          { bm: 'pagar', short: 'pagar', role: 'vocab', explain: 'A fence is a wall made of wood or wire around a place.', explainBm: 'Pagar di sekeliling sesuatu kawasan.' },
+  'area':           { bm: 'luas', short: 'luas', role: 'unit', explain: 'Area is the space inside a flat shape.', explainBm: 'Ruang di dalam sesuatu bentuk rata.' },
+  'wide':           { bm: 'lebar', short: 'lebar', role: 'unit', explain: 'Wide tells us how far it is from side to side.', explainBm: 'Ukuran dari sisi ke sisi.' },
+  'cover':          { bm: 'menutup / meliputi', short: 'liputi', role: 'action', explain: 'Cover means to spread over the whole surface.', explainBm: 'Menutup seluruh permukaan.' },
+  'ratio':          { bm: 'nisbah', short: 'nisbah', role: 'value', explain: 'A ratio compares two amounts, like 2 : 3.', explainBm: 'Nisbah membandingkan dua kuantiti, seperti 2 : 3.' },
+  'for every':      { bm: 'bagi setiap', short: 'setiap', role: 'vocab', explain: 'For every means each time we have one amount, we have the other.', explainBm: 'Setiap kali ada satu kuantiti, ada kuantiti yang lain.' },
+  'represents':     { bm: 'mewakili', short: 'wakili', role: 'vocab', explain: 'Represents means stands for.', explainBm: 'Menjadi tanda bagi sesuatu.' },
+  'sold':           { bm: 'dijual', short: 'jual', role: 'action', explain: 'Sold means given to customers for money.', explainBm: 'Diberi kepada pelanggan untuk wang.' },
+  'most popular':   { bm: 'paling digemari', short: 'paling suka', role: 'vocab', explain: 'Most popular means liked by the most people.', explainBm: 'Disukai oleh paling ramai orang.' },
+  'gives':          { bm: 'memberi', short: 'beri', role: 'action', explain: 'Gives means hands something to someone else.', explainBm: 'Menyerahkan sesuatu kepada orang lain.' },
+  'of':             { bm: 'daripada', short: 'daripada', role: 'action', explain: 'In fractions, “of” means find that part of the amount.', explainBm: 'Dalam pecahan, “of” bermaksud cari bahagian itu daripada jumlah.' }
+};
