@@ -11,9 +11,14 @@ FMQ.learner = {
   supportLanguage: { code: 'ms', name: 'Bahasa Malaysia', short: 'BM' },
   // Starting focus from the most recent exam. These are hypotheses to test, never labels.
   priorities: [
+    'clock', 'basic-facts', 'times-tables',
     'money', 'decimals', 'time24', 'duration', 'percent', 'fractions',
     'ratio', 'perimeter', 'area', 'measure', 'data', 'word-problems', 'shapes', 'coordinates'
   ],
+  // Foundations a parent has seen her struggle with: taught from the basics first.
+  startWithBasics: ['clock'],
+  // Language: 'dual' (BM + English), 'bm' or 'en'. Changeable in the app.
+  defaultLang: 'dual',
   // Weekly learning goal: any number of days, never a fixed schedule.
   weeklyGoal: 4,
   // Target length of one Daily Quest in minutes (for the parent summary).

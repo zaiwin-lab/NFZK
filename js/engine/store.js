@@ -75,6 +75,11 @@ FMQ.store = (function () {
       state.profile.name = FMQ.learner.name;
       // Older records: the 12-week plan starts from the first session.
       if (!state.profile.startDay && state.sessions.length) state.profile.startDay = state.sessions[0].day;
+      // Foundations named in the learner profile start flagged for catch-up (once).
+      if (!state.profile.basicsApplied) {
+        (FMQ.learner.startWithBasics || []).forEach(function (id) { (state.skills[id] = state.skills[id] || {}).flag = true; });
+        state.profile.basicsApplied = true;
+      }
       return state;
     },
     get: function () { return state || this.load(); },

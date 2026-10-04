@@ -4,7 +4,7 @@
    means "more questions". */
 window.FMQ = window.FMQ || {};
 
-FMQ.diagnosticSet = ['as-2', 'mon-1', 't24-2', 'du-2', 'pc-2', 'fr-2', 'ra-2', 'pe-2', 'ar-2', 'da-2'];
+FMQ.diagnosticSet = ['g~clk-half~7', 'pv-2', 'as-2', 'mon-1', 't24-2', 'du-2', 'pc-2', 'fr-2', 'ra-2', 'pe-2', 'ar-2', 'da-2'];
 
 // Preferred changed questions for reassessment (same idea, different situation).
 FMQ.twins = {
@@ -20,15 +20,16 @@ FMQ.twins = {
 };
 
 FMQ.sections = {
-  easy:  { title: 'Easy Start',      intro: 'Two quick ones to warm up.' },
-  skill: { title: 'Today’s Skill',   intro: 'Now our main skill for today.' },
-  fix:   { title: 'Foundation Fix',  intro: 'Let’s strengthen one building block 🌱.' },
-  boss:  { title: 'Mini Boss',       intro: 'One thinking question. Take your time.' },
-  review: { title: 'Review Mix',     intro: 'A mix of skills you have practised. Let’s see what stuck 🌱.' },
-  diag:  { title: 'Getting to know you', intro: '' },
-  checkpoint: { title: 'Checkpoint ⭐', intro: '' },
-  practice: { title: 'Practice', intro: '' },
-  demo:  { title: 'Sample', intro: '' }
+  easy:  { title: 'Easy Start',      titleBm: 'Mula Mudah',          intro: 'Two quick ones to warm up.', introBm: 'Dua soalan mudah untuk memanaskan badan.' },
+  skill: { title: 'Today’s Skill',   titleBm: 'Kemahiran Hari Ini',  intro: 'Now our main skill for today.', introBm: 'Sekarang kemahiran utama hari ini.' },
+  fix:   { title: 'Foundation Fix',  titleBm: 'Kukuhkan Asas',       intro: 'Let’s strengthen one building block 🌱.', introBm: 'Mari kukuhkan satu asas 🌱.' },
+  boss:  { title: 'Mini Boss',       titleBm: 'Cabaran Mini',        intro: 'One thinking question. Take your time.', introBm: 'Satu soalan berfikir. Ambil masa awak.' },
+  review: { title: 'Review Mix',     titleBm: 'Ulang Kaji Campuran', intro: 'A mix of skills you have practised. Let’s see what stuck 🌱.', introBm: 'Campuran kemahiran yang sudah dilatih. Mari lihat apa yang awak ingat 🌱.' },
+  diag:  { title: 'Getting to know you', titleBm: 'Kenali Diri',     intro: '' },
+  checkpoint: { title: 'Checkpoint ⭐', titleBm: 'Semakan ⭐',        intro: '' },
+  practice: { title: 'Practice', titleBm: 'Latihan', intro: '' },
+  drill: { title: 'Latih Tubi', titleBm: 'Latih Tubi', intro: '' },
+  demo:  { title: 'Sample', titleBm: 'Contoh', intro: '' }
 };
 
 FMQ.quest = (function () {
@@ -84,6 +85,21 @@ FMQ.quest = (function () {
 
   function hasEvidence(state, skillId) { return M.attemptsFor(state, skillId).length > 0; }
 
+  // A prerequisite needs work if it was failed, is a flagged foundation, or is an untested foundation.
+  function needsBasics(state, states, id) {
+    var s = FMQ.skill(id), st = states[id], sk = state.skills[id] || {};
+    if (st === 'secure') return false;
+    if (st === 'practise' && hasEvidence(state, id)) return true;
+    if (s && s.basic && (sk.flag || st === 'unknown')) return true;
+    return false;
+  }
+  function dependentsStruggle(state, states, id) {
+    return FMQ.curriculum.skills.some(function (s) {
+      return (s.prereqs || []).indexOf(id) >= 0 && (states[s.id] === 'practise' || states[s.id] === 'building') &&
+        M.attemptsFor(state, s.id).some(function (a) { return M.isStruggle(a); });
+    });
+  }
+
   function chooseFocus(state, opts) {
     opts = opts || {};
     var states = M.allStates(state);
@@ -105,8 +121,14 @@ FMQ.quest = (function () {
       var last = atts[atts.length - 1];
       if (st === 'building' && last && (last.hints > 0 || last.explained || !last.correct)) score += 12; // repaired, needs reassessment
       if (st === 'practise') score += 10;
-      if (st === 'unknown') score += 4;
+      if (st === 'unknown') score += wi >= 0 ? 16 : 4; // untested theme skills get their turn this week
       if (state.skills[s.id] && state.skills[s.id].gap) score += 6;
+      // Catch-up: foundations come first when they are missing or flagged by a parent.
+      if (s.basic) {
+        if (state.skills[s.id] && state.skills[s.id].flag) score += 50;
+        if (st === 'practise' && atts.length) score += 45;
+        if (st === 'unknown' && dependentsStruggle(state, states, s.id)) score += 35;
+      }
       score += (16 - s.order) * 0.3;
       if (s.id === lastFocus) score -= 14; // revisit through spaced retrieval instead
       if (!best || score > best.score) best = { id: s.id, score: score };
@@ -114,7 +136,7 @@ FMQ.quest = (function () {
     var focus = best ? best.id : 'word-problems';
     // Step backward when a prerequisite is clearly missing.
     var sk = FMQ.skill(focus), stepBack = null;
-    var gap = (sk.prereqs || []).find(function (p) { return states[p] === 'practise' && hasEvidence(state, p); });
+    var gap = (sk.prereqs || []).find(function (p) { return needsBasics(state, states, p); });
     if (gap) { stepBack = focus; focus = gap; }
     return { focus: focus, stepBackFrom: stepBack, states: states };
   }
@@ -155,8 +177,14 @@ FMQ.quest = (function () {
 
     // C. Foundation Fix — a prerequisite or earlier gap.
     var fixSkill = null;
+    var basics = FMQ.curriculum.skills.filter(function (s) { return s.basic && s.id !== focus && states[s.id] !== 'secure'; });
+    basics.sort(function (a, b) {
+      function rank(s) { var k = state.skills[s.id] || {}; return k.flag ? 0 : states[s.id] === 'practise' ? 1 : states[s.id] === 'unknown' ? 2 : 3; }
+      return rank(a) - rank(b);
+    });
+    if (basics.length) fixSkill = basics[0].id;
     var fsk = FMQ.skill(pick.stepBackFrom || focus);
-    fixSkill = (fsk.prereqs || []).find(function (p) { return p !== focus && states[p] !== 'secure'; });
+    if (!fixSkill) fixSkill = (fsk.prereqs || []).find(function (p) { return p !== focus && states[p] !== 'secure'; });
     if (!fixSkill) {
       fixSkill = FMQ.curriculum.skills.map(function (s) { return s.id; }).find(function (id) {
         return id !== focus && id !== 'word-problems' && state.skills[id] && state.skills[id].gap;
@@ -250,6 +278,19 @@ FMQ.quest = (function () {
     return { id: U.uid('p'), mode: 'practice', day: U.dayKey(), startedAt: Date.now(), focus: skillId, items: items, idx: 0, results: [], stars: 0, repairs: 0, struggles: 0 };
   }
 
+  /* Latih Tubi: a quick round of n questions from chosen templates (fresh numbers each time). */
+  function buildDrill(tplIds, n, title) {
+    n = n || 10;
+    var items = [], last = null;
+    for (var i = 0; i < n; i++) {
+      var pool = tplIds.length > 1 ? tplIds.filter(function (t) { return t !== last; }) : tplIds;
+      var t = pool[Math.floor(Math.random() * pool.length)], q = FMQ.gen.instance(t);
+      last = t;
+      items.push({ qid: q.id, skill: q.skill, level: q.level, section: 'drill', changed: false });
+    }
+    return { id: U.uid('t'), mode: 'drill', title: title, templates: tplIds, day: U.dayKey(), startedAt: Date.now(), focus: items[0].skill, items: items, idx: 0, results: [], stars: 0, repairs: 0, struggles: 0 };
+  }
+
   function buildDemo(qid) {
     var q = FMQ.question(qid);
     return { id: U.uid('s'), mode: 'demo', day: U.dayKey(), startedAt: Date.now(), focus: q.skill,
@@ -258,7 +299,7 @@ FMQ.quest = (function () {
 
   /* Adapt the remaining queue after a result. Returns a note for MARIA, or null. */
   function adapt(state, quest, item, a) {
-    if (quest.mode === 'diagnostic' || quest.mode === 'checkpoint') return null;
+    if (quest.mode === 'diagnostic' || quest.mode === 'checkpoint' || quest.mode === 'drill') return null;
     var struggle = M.isStruggle(a);
     if (!struggle) return null;
     quest.struggles++;
@@ -289,7 +330,7 @@ FMQ.quest = (function () {
   }
 
   return {
-    buildDaily: buildDaily, buildDiagnostic: buildDiagnostic, buildCheckpoint: buildCheckpoint, checkpointDue: checkpointDue, seenMaps: seenMaps, buildPractice: buildPractice, buildDemo: buildDemo,
+    buildDaily: buildDaily, buildDiagnostic: buildDiagnostic, buildCheckpoint: buildCheckpoint, buildDrill: buildDrill, checkpointDue: checkpointDue, seenMaps: seenMaps, buildPractice: buildPractice, buildDemo: buildDemo,
     adapt: adapt, chooseFocus: chooseFocus, nextFocusAfter: nextFocusAfter, pickQuestion: pickQuestion
   };
 })();

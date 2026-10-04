@@ -9,19 +9,19 @@ FMQ.mastery = (function () {
   var WINDOW = 6;
 
   var OUTCOMES = {
-    independent: { icon: '✅', label: 'Correct — Independent', weight: 3 },
-    corrected:   { icon: '✅', label: 'Correct — Self-corrected', weight: 2.5 },
-    hint1:       { icon: '💡', label: 'Correct — 1 Hint', weight: 2 },
-    hint2:       { icon: '💡💡', label: 'Correct — 2+ Hints', weight: 1 },
-    explained:   { icon: '📘', label: 'Learned with Explanation', weight: 0.5 },
-    wrong:       { icon: '🌱', label: 'Still learning', weight: 0 }
+    independent: { icon: '✅', label: 'Correct — Independent', labelBm: 'Betul — Sendiri', weight: 3 },
+    corrected:   { icon: '✅', label: 'Correct — Self-corrected', labelBm: 'Betul — Dibetulkan sendiri', weight: 2.5 },
+    hint1:       { icon: '💡', label: 'Correct — 1 Hint', labelBm: 'Betul — 1 petunjuk', weight: 2 },
+    hint2:       { icon: '💡💡', label: 'Correct — 2+ Hints', labelBm: 'Betul — 2+ petunjuk', weight: 1 },
+    explained:   { icon: '📘', label: 'Learned with Explanation', labelBm: 'Belajar dengan penerangan', weight: 0.5 },
+    wrong:       { icon: '🌱', label: 'Still learning', labelBm: 'Masih belajar', weight: 0 }
   };
 
   var STATES = {
-    secure:   { icon: '🟢', label: 'I Can Do This', parent: 'Secure', tone: 'secure' },
-    building: { icon: '🟡', label: 'I’m Building This', parent: 'Building', tone: 'building' },
-    practise: { icon: '🌱', label: 'Let’s Practise This', parent: 'Foundation repair', tone: 'practise' },
-    unknown:  { icon: '○', label: 'Coming soon', parent: 'Not yet assessed', tone: 'unknown' }
+    secure:   { icon: '🟢', label: 'I Can Do This', labelBm: 'Saya Boleh', parent: 'Secure', parentBm: 'Kukuh', tone: 'secure' },
+    building: { icon: '🟡', label: 'I’m Building This', labelBm: 'Sedang Dibina', parent: 'Building', parentBm: 'Sedang dibina', tone: 'building' },
+    practise: { icon: '🌱', label: 'Let’s Practise This', labelBm: 'Mari Berlatih', parent: 'Foundation repair', parentBm: 'Pemulihan asas', tone: 'practise' },
+    unknown:  { icon: '○', label: 'Coming soon', labelBm: 'Akan datang', parent: 'Not yet assessed', parentBm: 'Belum dinilai', tone: 'unknown' }
   };
 
   function outcomeOf(a) {
@@ -125,10 +125,12 @@ FMQ.mastery = (function () {
 
     var after = computeState(state, a.skill);
     sk.state = after;
+    if (after === 'secure') sk.flag = false;
     // Celebrate mastery once per skill; a later dip and recovery is quieter.
     if (after === 'secure' && before !== 'secure' && !sk.masteredTs) {
       sk.masteredTs = a.ts;
       sk.gap = false;
+      sk.flag = false;
       result.mastered = true;
       result.stars += 5;
       state.events.push({ ts: a.ts, day: a.day, type: 'mastered', skill: a.skill });

@@ -534,3 +534,105 @@ code { font-size: .9em; background: var(--bg-2); padding: .1em .35em; border-rad
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
 }
+
+/* ───────── Bilingual layer ───────── */
+.en2 { display: block; font-size: .82em; font-weight: 400; color: var(--muted); line-height: 1.35; margin-top: 1px; }
+.btn .en2, .navbtn .en2, .tool .en2, .langsw .en2 { font-size: .72em; opacity: .85; color: inherit; }
+.btn--primary .en2 { color: inherit; opacity: .8; }
+.chip .en2, .opt .en2 { display: inline; margin-left: 6px; }
+.chip .en2::before, .opt .en2::before { content: '· '; }
+.opt-text .en2 { display: block; margin: 2px 0 0; }
+.opt-text .en2::before { content: ''; }
+h1 .en2, h2 .en2, .section-tag .en2 { font-family: var(--font-body); }
+.langsw { display: inline-flex; background: var(--bg-2); border-radius: 99px; padding: 3px; gap: 2px; flex: none; }
+.langsw-btn { appearance: none; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: .8125rem; font-weight: 600; padding: 7px 12px; min-height: 36px; border-radius: 99px; cursor: pointer; white-space: nowrap; }
+.langsw-btn.is-on { background: var(--surface); color: var(--teal-ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.langsw--sm .langsw-btn { padding: 6px 9px; font-size: .75rem; }
+.topbar { gap: 10px; flex-wrap: wrap; }
+.play-meta { flex: 1; }
+.backbar h1 { flex: 1; min-width: 0; }
+.onboard-top { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.qtext-bm { display: flex; gap: 10px; align-items: flex-start; background: var(--teal-soft); color: var(--teal-ink); border-radius: var(--r-md); padding: 10px 12px; font-size: 1.0625rem; line-height: 1.45; white-space: pre-line; }
+.bm-tag { flex: none; font-size: .6875rem; font-weight: 700; letter-spacing: .06em; background: var(--surface); color: var(--teal-ink); padding: 2px 6px; border-radius: 6px; margin-top: 3px; }
+.qcard--notools .options { margin-bottom: 0; }
+.fb-ans { display: inline-block; background: var(--green-soft); color: var(--green-ink); padding: 2px 10px; border-radius: 8px; }
+.btn--sm { min-height: 40px; padding: 8px 14px; font-size: .875rem; }
+
+/* ───────── Guide & Latih Tubi ───────── */
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.secondary .row2 .navbtn { flex-direction: column; align-items: flex-start; background: var(--violet-soft); box-shadow: none; min-height: 76px; }
+.secondary .row2 .navbtn:first-child { background: var(--teal-soft); }
+.secondary .row2 .navbtn > span:first-child { font-size: 1.5rem; }
+.lessons { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.lesson-row { appearance: none; border: 0; background: transparent; font: inherit; color: inherit; width: 100%; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 12px 4px; border-bottom: 1px solid var(--line); min-height: 56px; flex-wrap: wrap; }
+.lessons li:last-child .lesson-row { border-bottom: 0; }
+.lesson-row:hover .lesson-name { color: var(--teal-ink); }
+.lesson-icon { font-size: 1.375rem; width: 1.6em; text-align: center; }
+.lesson-name { flex: 1; font-weight: 500; min-width: 9em; }
+.ldots { display: flex; gap: 6px; justify-content: center; }
+.ldot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); transition: all .2s; }
+.ldot.is-done { background: var(--teal-soft); }
+.ldot.is-on { width: 24px; border-radius: 99px; background: var(--teal); }
+.lesson-card { gap: 16px; align-items: stretch; }
+.lesson-text { font-size: 1.1875rem; line-height: 1.55; font-weight: 500; }
+.lesson-text .en2 { margin-top: 6px; }
+.lesson-nav { display: flex; justify-content: space-between; gap: 10px; }
+.lesson-nav .btn { flex: 1; }
+.lesson-nav span:empty { flex: 1; }
+.drillgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.drillgrid .ptile { min-height: 96px; }
+.drillscore { align-items: center; text-align: center; }
+.ds-big { font-family: var(--font-display); font-weight: 800; font-size: 3rem; color: var(--teal-ink); line-height: 1; }
+.dstars { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+.dstar { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--bg-2); color: var(--muted); font-size: .875rem; }
+.dstar.is-on { background: var(--amber-soft); color: var(--amber); }
+.basics { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.basicrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.basicrow > span:first-child { flex: 1; font-weight: 500; min-width: 10em; }
+
+/* ───────── New visuals ───────── */
+.v-clockfig { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.v-analog { max-width: 240px; }
+.v-face { fill: var(--surface); stroke: var(--ink); stroke-width: 4; }
+.v-tickmark { stroke: var(--muted); stroke-width: 1.5; }
+.v-tickmark--big { stroke: var(--ink); stroke-width: 3; }
+.v-clocknum { font-family: var(--font-display); font-weight: 700; font-size: 20px; fill: var(--ink); }
+.v-fivenum { font-size: 11px; font-weight: 600; fill: var(--violet); }
+.v-hand { stroke-linecap: round; }
+.v-hand--hour { stroke: var(--teal); stroke-width: 9; }
+.v-hand--min { stroke: var(--violet); stroke-width: 5; }
+.v-hand.is-glow { filter: drop-shadow(0 0 5px var(--amber)); }
+.v-hub { fill: var(--ink); }
+.v-handlegend { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; font-size: .875rem; margin: 0; }
+.v-handlegend .lg { display: inline-flex; align-items: center; gap: 6px; }
+.v-handlegend i { display: inline-block; height: 6px; border-radius: 3px; }
+.lg--hour i { width: 18px; background: var(--teal); height: 8px; }
+.lg--min i { width: 30px; background: var(--violet); }
+.v-handlegend .is-dim { opacity: .4; }
+.v-daybar { max-width: 360px; }
+.v-am { fill: var(--amber-soft); stroke: var(--amber); stroke-width: 1.5; }
+.v-pm { fill: var(--violet-soft); stroke: var(--violet); stroke-width: 1.5; }
+.v-am.is-dim, .v-pm.is-dim { opacity: .3; }
+.v-daylabel { font-weight: 700; font-size: 13px; fill: var(--ink); }
+.v-dayicon { font-size: 18px; }
+.v-timeline { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.tl-time { font-family: var(--font-display); font-weight: 700; font-size: 1.125rem; background: var(--ink); color: var(--bg); padding: 6px 12px; border-radius: 10px; font-variant-numeric: tabular-nums; }
+.tl-jump { font-size: .875rem; font-weight: 600; color: var(--teal-ink); background: var(--teal-soft); padding: 4px 10px; border-radius: 99px; position: relative; }
+.tl-jump--q { color: var(--amber-ink); background: var(--amber-soft); }
+.v-pv { max-width: 360px; margin: 0 auto; }
+.v-pv th, .v-pv td { text-align: center; }
+.v-pv td { font-family: var(--font-display); font-weight: 700; font-size: 1.75rem; }
+.v-pv td.is-mark { background: var(--amber-soft); color: var(--amber-ink); border-radius: 8px; }
+.v-column { display: inline-flex; flex-direction: column; align-items: flex-end; align-self: center; font-family: var(--font-display); font-weight: 700; font-size: 1.75rem; font-variant-numeric: tabular-nums; padding: 8px 16px; background: var(--bg); border-radius: var(--r-md); }
+.v-column .cr { display: flex; align-items: center; }
+.v-column .cc { width: 1.1em; text-align: center; }
+.v-column .cc--res { color: var(--teal-ink); }
+.v-column .cop { width: 1.1em; color: var(--violet); }
+.v-column .cr--line { align-self: stretch; height: 3px; background: var(--ink); border-radius: 2px; margin: 4px 0; }
+@media (max-width: 380px) { .langsw--sm .langsw-btn { padding: 6px 7px; } .play-top { flex-wrap: wrap; } }
+.fb-title { flex-wrap: wrap; }
+.fb-title .en2 { flex-basis: 100%; }
+.fb-title .fb-ans { flex-basis: auto; }
+.lesson-nav .btn { min-width: 0; padding: 12px 16px; }
+.lesson-nav .btn--ghost { flex: 0 1 auto; }
+.lesson-nav .btn--primary { flex: 1 1 auto; }

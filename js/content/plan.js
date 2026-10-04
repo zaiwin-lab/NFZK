@@ -7,19 +7,20 @@ window.FMQ = window.FMQ || {};
 
 FMQ.plan = {
   weeks: [
-    { n: 1,  title: 'Number Builders',  icon: '🧱', skills: ['place-value', 'add-sub'],        goal: 'Strong number foundations and words like total, difference and altogether.' },
-    { n: 2,  title: 'Money Smart',      icon: '💵', skills: ['decimals', 'money'],             goal: 'Decimal subtraction and real shopping problems: change, remaining, total.' },
-    { n: 3,  title: 'Time Explorer',    icon: '🕐', skills: ['time24', 'duration'],            goal: '24-hour time and how long things take.' },
-    { n: 4,  title: 'Fraction Friends', icon: '🍕', skills: ['fractions', 'times-divide'],     goal: 'Equal parts, fractions of amounts and sharing.' },
-    { n: 5,  title: 'Percent Power',    icon: '💯', skills: ['percent', 'fractions'],          goal: 'From fractions to percentages, out of 100.' },
-    { n: 6,  title: 'Shape Up',         icon: '🔲', skills: ['perimeter', 'area'],             goal: 'Around the edge or the space inside? Perimeter and area.', checkpoint: 1 },
-    { n: 7,  title: 'Measure It',       icon: '📏', skills: ['measure', 'decimals'],           goal: 'Length, mass and volume, and changing units.' },
-    { n: 8,  title: 'Ratio Ranger',     icon: '⚖️', skills: ['ratio', 'times-divide'],         goal: 'Comparing amounts with ratio and “for every”.' },
-    { n: 9,  title: 'Data Detective',   icon: '📊', skills: ['data'],                          goal: 'Reading pictographs, tables and bar charts.' },
-    { n: 10, title: 'Shapes & Grids',   icon: '📐', skills: ['shapes', 'coordinates'],         goal: 'Angles, lines, solid shapes and coordinates.' },
-    { n: 11, title: 'Problem Solver',   icon: '🧩', skills: ['word-problems', 'money', 'duration'], goal: 'Two-step problems: WHAT? HOW? DO. CHECK.' },
-    { n: 12, title: 'Grand Review',     icon: '🏆', skills: [],                                goal: 'Everything together, then the final Checkpoint.', checkpoint: 2 }
+    { n: 1,  title: 'Number Builders',  titleBm: 'Pembina Nombor',      icon: '🧱', skills: ['basic-facts', 'place-value', 'add-sub'], goal: 'Strong number foundations and words like total, difference and altogether.', goalBm: 'Asas nombor yang kukuh dan perkataan seperti jumlah, beza dan jumlah keseluruhan.' },
+    { n: 2,  title: 'Money Smart',      titleBm: 'Bijak Wang',          icon: '💵', skills: ['decimals', 'money'],                     goal: 'Decimal subtraction and real shopping problems: change, remaining, total.', goalBm: 'Tolak perpuluhan dan masalah membeli-belah: baki wang, baki, jumlah.' },
+    { n: 3,  title: 'Time Explorer',    titleBm: 'Penjelajah Masa',     icon: '🕐', skills: ['clock', 'time24', 'duration'],           goal: 'Reading the clock, 24-hour time and how long things take.', goalBm: 'Membaca jam, sistem 24 jam dan tempoh masa.' },
+    { n: 4,  title: 'Fraction Friends', titleBm: 'Kawan Pecahan',       icon: '🍕', skills: ['times-tables', 'fractions', 'times-divide'], goal: 'Times tables, equal parts, fractions of amounts and sharing.', goalBm: 'Sifir, bahagian sama besar, pecahan daripada kuantiti dan bahagi.' },
+    { n: 5,  title: 'Percent Power',    titleBm: 'Kuasa Peratus',       icon: '💯', skills: ['percent', 'fractions'],                 goal: 'From fractions to percentages, out of 100.', goalBm: 'Daripada pecahan kepada peratus, daripada 100.' },
+    { n: 6,  title: 'Shape Up',         titleBm: 'Bentuk Hebat',        icon: '🔲', skills: ['perimeter', 'area'],                    goal: 'Around the edge or the space inside? Perimeter and area.', goalBm: 'Di sekeliling tepi atau ruang di dalam? Perimeter dan luas.', checkpoint: 1 },
+    { n: 7,  title: 'Measure It',       titleBm: 'Jom Ukur',            icon: '📏', skills: ['measure', 'decimals'],                  goal: 'Length, mass and volume, and changing units.', goalBm: 'Panjang, jisim dan isi padu, serta menukar unit.' },
+    { n: 8,  title: 'Ratio Ranger',     titleBm: 'Wira Nisbah',         icon: '⚖️', skills: ['ratio', 'times-divide'],                goal: 'Comparing amounts with ratio and “for every”.', goalBm: 'Membandingkan kuantiti dengan nisbah dan “bagi setiap”.' },
+    { n: 9,  title: 'Data Detective',   titleBm: 'Detektif Data',       icon: '📊', skills: ['data'],                                 goal: 'Reading pictographs, tables and bar charts.', goalBm: 'Membaca piktograf, jadual dan carta palang.' },
+    { n: 10, title: 'Shapes & Grids',   titleBm: 'Bentuk & Grid',       icon: '📐', skills: ['shapes', 'coordinates'],                goal: 'Angles, lines, solid shapes and coordinates.', goalBm: 'Sudut, garis, bentuk tiga dimensi dan koordinat.' },
+    { n: 11, title: 'Problem Solver',   titleBm: 'Penyelesai Masalah',  icon: '🧩', skills: ['word-problems', 'money', 'duration'],   goal: 'Two-step problems: WHAT? HOW? DO. CHECK.', goalBm: 'Masalah dua langkah: APA? BAGAIMANA? BUAT. SEMAK.' },
+    { n: 12, title: 'Grand Review',     titleBm: 'Ulang Kaji Besar',    icon: '🏆', skills: [],                                       goal: 'Everything together, then the final Checkpoint.', goalBm: 'Semua sekali, kemudian Semakan akhir.', checkpoint: 2 }
   ],
+
   milestones: [5, 10, 20, 30, 45, 60, 75, 90]
 };
 
