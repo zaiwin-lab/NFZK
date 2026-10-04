@@ -11,7 +11,9 @@
   function sname(id) { var s = FMQ.skill(id); return s ? s.name : id; }
   function sicon(id) { var s = FMQ.skill(id); return s ? s.icon : '•'; }
   function today() { return U.dayKey(); }
-  function doneToday() { return state.sessions.some(function (s) { return s.day === today() && s.mode === 'quest'; }); }
+  function doneToday() { return state.sessions.some(function (s) { return s.day === today() && (s.mode === 'quest' || s.mode === 'checkpoint'); }); }
+  function tracked(m) { return m === 'quest' || m === 'diagnostic' || m === 'checkpoint'; }
+  function assess(m) { return m === 'diagnostic' || m === 'checkpoint'; }
   function fmtDay(key) {
     var d = new Date(key + 'T12:00:00');
     return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -69,7 +71,13 @@
     } else {
       var label = aq && aq.idx > 0 ? 'CONTINUE TODAY’S QUEST' : 'START TODAY’S QUEST WITH ' + FMQ.brand().buddy;
       var preview = '';
-      if (state.profile.diagnosticDone && !aq) {
+      var dow = new Date().getDay(), weekend = (dow === 0 || dow === 6) && state.sessions.filter(function (x) { return x.mode === 'quest'; }).length >= 3;
+      if (state.profile.diagnosticDone && !aq && FMQ.quest.checkpointDue(state)) {
+        label = 'START CHECKPOINT WITH ' + FMQ.brand().buddy;
+        preview = '<p class="cta-sub">Today: Checkpoint ⭐ · 10 questions · see how you’ve grown</p>';
+      } else if (state.profile.diagnosticDone && !aq && weekend) {
+        preview = '<p class="cta-sub">Today: 🍀 Review Mix · about 10 minutes</p>';
+      } else if (state.profile.diagnosticDone && !aq) {
         var f = FMQ.quest.chooseFocus(state);
         preview = '<p class="cta-sub">Today: ' + sicon(f.focus) + ' ' + E(sname(f.focus)) + ' · about 15 minutes</p>';
       } else if (!state.profile.diagnosticDone) {
@@ -90,11 +98,22 @@
         stat('🏆', groups.secure.length, 'Skills Mastered') +
       '</section>' +
       '<section class="cta">' + cta + '</section>' +
+      (state.profile.diagnosticDone ? weekCard() : '') +
       '<nav class="secondary" aria-label="More">' +
         navBtn('practice', '🌱', 'Practice My Skills') + navBtn('progress', '🏆', 'My Progress') + navBtn('parent', '👨‍👧', 'Parent View') +
       '</nav>' +
       '<footer class="foot">' + E(FMQ.brand().full) + '</footer></main>';
   };
+  function weekCard() {
+    var info = FMQ.planInfo(state), dots = '';
+    for (var i = 0; i < info.goal; i++) dots += '<span class="wk-dot' + (i < info.daysThisWeek ? ' is-on' : '') + '" aria-hidden="true"></span>';
+    var reached = info.daysThisWeek >= info.goal;
+    var head = info.inPlan ? 'Week ' + info.weekNo + ' of 12' : 'Bonus weeks';
+    var title = info.inPlan ? info.week.icon + ' ' + info.week.title : '🏆 Keeping skills strong';
+    return '<button class="weekcard" data-act="go" data-arg="progress" aria-label="' + E(head + ': ' + title + '. ' + info.daysThisWeek + ' of ' + info.goal + ' learning days this week. Open my journey') + '">' +
+      '<span class="wk-text"><span class="wk-label">' + E(head) + '</span><span class="wk-title">' + E(title) + '</span></span>' +
+      '<span class="wk-goal"><span class="wk-dots">' + dots + '</span><span class="wk-sub">' + (reached ? 'Weekly goal reached 🌟' : info.daysThisWeek + ' of ' + info.goal + ' days') + '</span></span></button>';
+  }
   function stat(icon, val, label) {
     return '<div class="stat"><span class="stat-icon" aria-hidden="true">' + icon + '</span><span class="stat-val">' + E(val) + '</span><span class="stat-label">' + E(label) + '</span></div>';
   }
@@ -112,6 +131,8 @@
     if (ui.pendingLine) { line = ui.pendingLine; ui.pendingLine = null; }
     else if (item.repair) line = 'Same idea, new situation. Let’s see if it transfers.';
     else if (ui.quest.mode === 'diagnostic' && ui.quest.idx === 0) line = 'Try your best. There’s no rush, and no score.';
+    else if (ui.quest.mode === 'checkpoint' && ui.quest.idx === 0) line = 'New questions on the skills from your first day. Try first. No score, just growth.';
+    else if (ui.quest.kind === 'review' && ui.quest.idx === 1) line = FMQ.sections.review.intro;
     else if (ui.quest.mode === 'quest' && (!prev || prev.section !== item.section)) line = maria.sectionIntro(ui.quest, item.section);
     else if (ui.quest.mode === 'practice' && ui.quest.idx === 0) line = 'Three questions on ' + sname(ui.quest.focus).toLowerCase() + '. Then we stop.';
     ui.line = line;
@@ -123,7 +144,7 @@
 
   function startQuest(q) {
     ui.quest = q;
-    if (q.mode === 'quest' || q.mode === 'diagnostic') { state.activeQuest = q; save(); }
+    if (tracked(q.mode)) { state.activeQuest = q; save(); }
     newCard();
     go('play');
   }
@@ -146,7 +167,7 @@
     var c = ui.card, q = c.q, item = c.item, quest = ui.quest;
     var total = quest.items.length, n = quest.idx + 1;
     var sec = FMQ.sections[item.section] || { title: '' };
-    var tag = quest.mode === 'quest' ? sec.title : quest.mode === 'diagnostic' ? 'Getting to know you' : quest.mode === 'practice' ? 'Practice · ' + sname(quest.focus) : 'Sample flow';
+    var tag = quest.mode === 'quest' ? sec.title : quest.mode === 'diagnostic' ? 'Getting to know you' : quest.mode === 'checkpoint' ? 'Checkpoint ⭐' : quest.mode === 'practice' ? 'Practice · ' + sname(quest.focus) : 'Sample flow';
     var head = '<header class="play-top"><button class="iconbtn" data-act="pause" aria-label="Pause and go home">✕</button>' +
       '<div class="play-meta"><span class="section-tag">' + E(tag) + (item.repair ? ' <span class="tag-changed">Changed question</span>' : '') + '</span>' +
       '<span class="qcount">Question ' + n + ' of ' + total + '</span></div></header>' +
@@ -169,7 +190,7 @@
       var struck = c.wrongPicked.indexOf(o) >= 0;
       if (c.selected === o) cls += ' is-selected';
       if (struck) cls += ' is-struck';
-      if (c.phase === 'done' && o === q.answer && ui.quest.mode !== 'diagnostic') cls += ' is-correct';
+      if (c.phase === 'done' && o === q.answer && !assess(ui.quest.mode)) cls += ' is-correct';
       return '<button class="' + cls + '" role="radio" aria-checked="' + (c.selected === o) + '" data-act="select" data-arg="' + E(o) + '"' + (locked || struck ? ' disabled' : '') + '>' +
         '<span class="opt-letter" aria-hidden="true">' + letter + '</span><span class="opt-text">' + E(o) + '</span>' + (struck ? '<span class="sr-only"> (already tried)</span>' : '') + '</button>';
     }).join('');
@@ -273,7 +294,7 @@
       '<p class="fb-outcome"><span aria-hidden="true">' + o.icon + '</span> ' + E(o.label) + (r.stars ? ' <span class="fb-stars">+' + r.stars + ' ⭐</span>' : '') + '</p>' +
       '<p class="fb-title">' + E(c.message) + '</p>' +
       (q.check ? '<p class="fb-check"><b>CHECK</b> ' + E(q.check) + '</p>' : '');
-    if (q.why && quest.mode !== 'diagnostic' && (r.outcome === 'independent' || r.outcome === 'corrected')) html += whyBlock();
+    if (q.why && !assess(quest.mode) && (r.outcome === 'independent' || r.outcome === 'corrected')) html += whyBlock();
     html += '<div class="fb-actions"><button class="btn btn--primary btn--block" data-act="next">' + (quest.idx + 1 >= quest.items.length ? 'Finish ✓' : 'Next →') + '</button></div></div>';
     return html;
   }
@@ -335,13 +356,32 @@
       '<button class="btn btn--primary btn--xl" data-act="firstMission">Start my first mission 🚀</button></main>';
   };
 
+  views.checkpointResults = function () {
+    var no = ui.summary.checkpoint, rows = A.checkpointCompare(state, no);
+    var grew = rows.filter(function (r) { return r.grew; }).length;
+    var list = rows.map(function (r) {
+      var icon = r.now === 'independent' ? '✅' : '🌱';
+      return '<li class="tvn"><span class="tvn-skill">' + sicon(r.skill) + ' ' + E(sname(r.skill)) + '</span>' +
+        '<span class="tvn-then"><small>Then</small>' + E(A.outcomeWord(r.then)) + '</span><span class="tvn-arrow" aria-hidden="true">→</span>' +
+        '<span class="tvn-now' + (r.grew ? ' is-grew' : '') + '"><small>Now</small><span aria-hidden="true">' + icon + '</span> ' + E(A.outcomeWord(r.now)) + '</span></li>';
+    }).join('');
+    return '<main class="screen screen--center done">' +
+      '<h1 class="victory-title">Checkpoint ' + no + ' ⭐</h1>' +
+      mariaBubble(E(maria.checkpointDone(grew)), { big: true, name: true }) +
+      '<section class="done-card"><h2>' + E(FMQ.learner.name) + ' then vs ' + E(FMQ.learner.name) + ' now</h2><ul class="tvnlist">' + list + '</ul></section>' +
+      '<div class="done-actions"><button class="btn btn--primary btn--block" data-act="go" data-arg="home">Back Home</button>' +
+      '<button class="btn btn--ghost btn--block" data-act="go" data-arg="progress">View My Journey</button></div></main>';
+  };
+
   views.victory = function () {
     var s = ui.summary, mode = s.mode;
-    var title = mode === 'practice' ? 'Practice Complete 🎉' : mode === 'demo' ? 'Sample complete' : 'Quest Complete 🎉';
+    var title = mode === 'practice' ? 'Practice Complete 🎉' : mode === 'demo' ? 'Sample complete' : s.kind === 'review' ? 'Review Complete 🍀' : 'Quest Complete 🎉';
     var list = s.strengthened.map(function (id) { return '<li><span aria-hidden="true">✅</span> ' + E(sname(id)) + '</li>'; })
       .concat(s.improvedWords.map(function (w) { return '<li><span aria-hidden="true">✅</span> Understanding “' + E(w) + '”</li>'; })).join('');
     var cb = s.comebacks.length ? '<div class="comeback comeback--inline"><p class="comeback-title">COMEBACK WIN 🎉</p><p>' + s.comebacks.map(function (id) { return E(sname(id)); }).join(', ') + ': you used to need help with this. Today you solved it by yourself.</p></div>' : '';
     var ms = s.mastered.length ? '<p class="mastered">🏆 Mastered: ' + s.mastered.map(function (id) { return E(sname(id)); }).join(', ') + '</p>' : '';
+    if (s.stamp) ms += '<p class="stampline"><span class="stamp" aria-hidden="true">' + FMQ.plan.weeks[s.stamp - 1].icon + '</span> ' + E(maria.stamp(FMQ.plan.weeks[s.stamp - 1])) + '</p>';
+    if (s.milestone) ms += '<p class="stampline"><span class="stamp" aria-hidden="true">🌸</span> ' + E(maria.milestone(s.milestone)) + '</p>';
     var next = s.next ? '<h2>Tomorrow we’ll continue with</h2><ul class="ticks"><li><span aria-hidden="true">🌱</span> ' + E(sname(s.next)) + '</li></ul>' : '';
     var buttons = mode === 'demo'
       ? '<button class="btn btn--primary btn--block" data-act="go" data-arg="parent">Back to Parent View</button>'
@@ -373,12 +413,41 @@
     var cbHtml = cbs.length ? '<section class="pcard"><h2>Comeback Wins 🎉</h2><ul class="ticks">' + cbs.map(function (e) { return '<li>' + sicon(e.skill) + ' ' + E(sname(e.skill)) + ' <span class="muted">· ' + fmtDay(e.day) + '</span></li>'; }).join('') + '</ul></section>' : '';
     return '<main class="screen progresspage">' + backBar('My Progress') +
       '<section class="pcard"><h2>Maths Journey</h2><p class="muted">What can I do now?</p><ul class="journey">' + journey + '</ul></section>' +
+      journeyCard() + gardenCard() +
       '<section class="pcard"><h2>English Power from Maths</h2><ul class="words">' + words + '</ul></section>' +
       '<section class="pcard"><h2>' + E(FMQ.learner.name) + ' vs ' + E(FMQ.learner.name) + '</h2><p class="muted">This week compared with before. Nobody else.</p>' + vs + '</section>' +
       cbHtml +
       '<section class="pcard pcard--row"><div><b>' + state.stars + '</b><span>⭐ Stars</span></div><div><b>' + streak.total + '</b><span>📅 Learning days</span></div></section>' +
       '</main>';
   };
+
+  function journeyCard() {
+    if (!state.profile.diagnosticDone) return '';
+    var info = FMQ.planInfo(state), stamps = {};
+    state.events.forEach(function (e) { if (e.type === 'stamp') stamps[e.week] = true; });
+    var stops = FMQ.plan.weeks.map(function (w) {
+      var st = stamps[w.n] ? 'done' : w.n === info.weekNo ? 'now' : w.n < info.weekNo ? 'past' : 'next';
+      return '<li class="stop stop--' + st + '"><span class="stop-icon" aria-hidden="true">' + w.icon + '</span><span class="stop-text"><small>Week ' + w.n + (w.checkpoint ? ' · Checkpoint ⭐' : '') + '</small>' + E(w.title) + '</span>' +
+        (st === 'done' ? '<span class="stop-badge">Stamp ✓</span>' : st === 'now' ? '<span class="stop-badge stop-badge--now">This week</span>' : '') + '</li>';
+    }).join('');
+    return '<section class="pcard"><h2>My 12-Week Journey</h2><p class="muted">Learn on ' + info.goal + ' days in a week to collect that week’s stamp.</p><ol class="stops">' + stops + '</ol></section>';
+  }
+  function gardenCard() {
+    if (!state.profile.diagnosticDone) return '';
+    var g = A.garden(state), rows = '';
+    var glyph = { grow: '🌿', bloom: '🌸', star: '⭐', soil: '' };
+    for (var w = 0; w < g.weeks; w++) {
+      var cells = g.cells.slice(w * 7, w * 7 + 7).map(function (c) {
+        var label = fmtDay(c.day) + (c.kind === 'soil' ? (c.future ? '' : ': rest day') : ': learning day');
+        return '<span class="gcell gcell--' + c.kind + (c.future ? ' is-future' : '') + (c.today ? ' is-today' : '') + '" title="' + E(label) + '">' + (glyph[c.kind] || '') + '</span>';
+      }).join('');
+      rows += '<div class="grow"><span class="grow-label">W' + (w + 1) + '</span>' + cells + '</div>';
+    }
+    return '<section class="pcard"><h2>My Learning Garden</h2><p class="muted">Every learning day grows something. Rest days are fine.</p>' +
+      '<div class="garden" role="img" aria-label="' + g.grown + ' learning days so far">' + rows + '</div>' +
+      '<p class="legend"><span>🌿 Learning day</span><span>🌸 Comeback day</span><span>⭐ Checkpoint</span></p>' +
+      '<p class="garden-count"><b>' + g.grown + '</b> learning days grown</p></section>';
+  }
 
   function backBar(title, parent) {
     return '<header class="backbar' + (parent ? ' backbar--parent' : '') + '"><button class="iconbtn" data-act="go" data-arg="home" aria-label="Back home">←</button><h1>' + E(title) + '</h1></header>';
@@ -446,7 +515,7 @@
     var chart = sess.length ? independenceChart(sess) : '<p class="muted">Sessions will appear here.</p>';
     var recent = sess.slice().reverse().slice(0, 6).map(function (s) {
       return '<li><button class="sessrow" data-act="parentSummary" data-arg="' + E(s.id) + '"><span class="sess-day">' + fmtDay(s.day) + '</span><span class="sess-what">' +
-        (s.mode === 'diagnostic' ? 'First diagnostic' : s.mode === 'practice' ? 'Practice · ' + E(sname(s.focus)) : 'Daily Quest · ' + E(sname(s.focus))) + '</span><span class="sess-meta">' + s.minutes + ' min · ' + s.independent + '/' + s.questions + ' independent' + (s.comebacks.length ? ' · 🎉' : '') + '</span></button></li>';
+        (s.mode === 'diagnostic' ? 'First diagnostic' : s.mode === 'checkpoint' ? 'Checkpoint ' + s.checkpoint + ' ⭐' : s.mode === 'practice' ? 'Practice · ' + E(sname(s.focus)) : s.kind === 'review' ? 'Weekend Review Mix' : 'Daily Quest · ' + E(sname(s.focus))) + '</span><span class="sess-meta">' + s.minutes + ' min · ' + s.independent + '/' + s.questions + ' independent' + (s.comebacks.length ? ' · 🎉' : '') + '</span></button></li>';
     }).join('');
 
     return '<main class="screen parent">' + backBar('Parent View', true) +
@@ -459,6 +528,7 @@
         '<p class="muted small">' + groups.unknown.length + ' skills not yet assessed. One correct answer never counts as mastery here.</p></section>' +
       '<section class="psec psec--maria"><h2>' + avatar(28) + ' ' + E(FMQ.brand().buddy) + '’s Observation</h2><ul class="obs">' + obs + '</ul>' +
         '<div class="nextfocus"><p class="nf-label">Recommended Next Focus</p><p class="nf-skill">' + rec.skill.icon + ' ' + E(rec.skill.name) + '</p><p>' + E(rec.why) + '</p></div></section>' +
+      planSection() +
       '<section class="psec"><h2>What is improving?</h2><p class="muted small">How each recent session was answered.</p>' + chart + '</section>' +
       '<section class="psec"><h2>Why is ' + E(name) + ' struggling?</h2><p class="muted small">Recurring error patterns, last 14 days. Each wrong attempt is classified by where the reasoning broke down.</p>' + patHtml + '</section>' +
       '<section class="psec"><h2>Maths-English Vocabulary</h2>' + vocabHtml + '</section>' +
@@ -474,12 +544,42 @@
         '<li><b>Progress parents can actually understand.</b> Most systems ask “Was the answer right?” This one also asks “Could ' + E(name) + ' solve it independently?”</li></ul></section>' +
       '<section class="psec"><h2>Data</h2><div class="demos">' +
         '<button class="btn btn--ghost" data-act="loadDemo">Load sample history</button>' +
-        '<button class="btn btn--ghost" data-act="exportData">' + (ui.exportOpen ? 'Hide data' : 'Export data (JSON)') + '</button>' +
+        '<button class="btn btn--ghost" data-act="exportData">' + (ui.exportOpen ? 'Hide backup' : 'Back up progress') + '</button>' +
+        '<button class="btn btn--ghost" data-act="restoreOpen">' + (ui.restoreOpen ? 'Hide restore' : 'Restore from backup') + '</button>' +
         '<button class="btn ' + (ui.confirmReset ? 'btn--danger' : 'btn--ghost') + '" data-act="reset">' + (ui.confirmReset ? 'Tap again to erase all progress' : 'Reset all progress') + '</button></div>' +
-        (ui.exportOpen ? '<label class="sr-only" for="exportbox">Learner data</label><textarea id="exportbox" class="exportbox" readonly>' + E(FMQ.store.exportJSON()) + '</textarea><button class="btn btn--soft" data-act="copyExport">Copy</button>' : '') +
+        (ui.exportOpen ? '<p class="small">Copy this text and keep it somewhere safe (for example, email it to yourself). You can paste it back with “Restore from backup”.</p><label class="sr-only" for="exportbox">Learner data</label><textarea id="exportbox" class="exportbox" readonly>' + E(FMQ.store.exportJSON()) + '</textarea><button class="btn btn--soft" data-act="copyExport">Copy backup</button>' : '') +
+        (ui.restoreOpen ? '<label class="small" for="restorebox">Paste a backup here</label><textarea id="restorebox" class="exportbox"></textarea><button class="btn ' + (ui.confirmRestore ? 'btn--danger' : 'btn--soft') + '" data-act="restore">' + (ui.confirmRestore ? 'Tap again to replace current progress' : 'Restore') + '</button>' + (ui.restoreMsg ? '<p class="small" role="status">' + E(ui.restoreMsg) + '</p>' : '') : '') +
+        backupNote() +
         '<p class="muted small">Progress is saved on this device. Learner settings live in <code>js/content/learner.js</code>.</p></section>' +
       (ui.modal ? modal() : '') + '</main>';
   };
+  function planSection() {
+    if (!state.profile.diagnosticDone) return '';
+    var info = FMQ.planInfo(state), st = M.allStates(state), stamps = {};
+    state.events.forEach(function (e) { if (e.type === 'stamp') stamps[e.week] = true; });
+    var rows = FMQ.plan.weeks.map(function (w) {
+      var days = FMQ.weekDays(state, w.n), cur = w.n === info.weekNo;
+      var skills = w.skills.map(function (id) { return '<span class="chip chip--' + M.STATES[st[id]].tone + '">' + M.STATES[st[id]].icon + ' ' + E(sname(id)) + '</span>'; }).join(' ');
+      return '<tr' + (cur ? ' class="is-current"' : '') + '><th scope="row">' + w.n + '</th><td><b>' + w.icon + ' ' + E(w.title) + '</b>' + (w.checkpoint ? ' <span class="chip chip--unknown">Checkpoint ' + w.checkpoint + '</span>' : '') + '<br><span class="muted small">' + E(w.goal) + '</span><div class="plan-skills">' + skills + '</div></td>' +
+        '<td class="num">' + (w.n > info.weekNo ? '—' : days + ' / 7' + (stamps[w.n] ? ' ✓' : '')) + '</td></tr>';
+    }).join('');
+    var cps = [1, 2].filter(function (no) { return state.sessions.some(function (s) { return s.mode === 'checkpoint' && s.checkpoint === no; }); });
+    var cpHtml = cps.map(function (no) {
+      var r = A.checkpointCompare(state, no), grew = r.filter(function (x) { return x.grew; }).length, kept = r.filter(function (x) { return x.kept; }).length;
+      return '<h3>Checkpoint ' + no + ': ' + grew + ' skill' + (grew === 1 ? '' : 's') + ' moved to independent, ' + kept + ' stayed independent</h3><div class="tablewrap"><table class="ptable"><thead><tr><th scope="col">Skill</th><th scope="col">First diagnostic</th><th scope="col">Checkpoint ' + no + '</th></tr></thead><tbody>' +
+        r.map(function (x) { return '<tr><th scope="row">' + E(sname(x.skill)) + '</th><td>' + E(A.outcomeWord(x.then)) + '</td><td>' + (x.grew ? '⬆ ' : '') + E(A.outcomeWord(x.now)) + '</td></tr>'; }).join('') + '</tbody></table></div>';
+    }).join('');
+    return '<section class="psec"><h2>3-Month Plan</h2><p class="muted small">' + (info.inPlan ? 'Week ' + info.weekNo + ' of 12 · started ' + fmtDay(info.start) + ' · weekly goal ' + info.goal + ' days. ' : 'The 12 weeks are complete. Quests continue as spaced review. ') +
+      'Each week sets a direction; the daily quest still steps back to missing foundations and skips secure skills.</p>' +
+      '<div class="tablewrap"><table class="ptable plan"><thead><tr><th scope="col">Wk</th><th scope="col">Theme and skills</th><th scope="col" class="num">Days</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      (cpHtml ? '<div class="cp">' + cpHtml + '</div>' : '<p class="muted small">Checkpoints in weeks 6 and 12 repeat the first diagnostic with new questions, so you can compare her with herself.</p>') + '</section>';
+  }
+  function backupNote() {
+    var lb = state.profile.lastBackup, days = lb ? U.daysBetween(lb, today()) : null;
+    if (state.sessions.length < 3) return '';
+    if (days === null || days > 7) return '<p class="backup-note">💾 Progress is saved only on this device. ' + (days === null ? 'It hasn’t been backed up yet.' : 'Last backup: ' + days + ' days ago.') + ' A weekly backup keeps 3 months of progress safe.</p>';
+    return '<p class="muted small">Last backup: ' + fmtDay(lb) + '.</p>';
+  }
   function kpi(label, val, sub) {
     return '<div class="kpi"><p class="kpi-label">' + E(label) + '</p><p class="kpi-val">' + E(val) + '</p><p class="kpi-sub">' + (sub || '') + '</p></div>';
   }
@@ -525,7 +625,7 @@
       correct: correct, firstTry: c.tries <= 1, tries: c.tries, hints: c.hints, explained: !!explained,
       bridge: c.bridge, confused: c.confused, triedAlone: c.triedAlone,
       errorCat: (correct && c.tries <= 1) ? null : (c.errorCat || (explained && !c.tries ? 'CONCEPT' : null)),
-      ms: Date.now() - c.startTs
+      ms: Date.now() - c.startTs, checkpoint: quest.checkpoint || undefined
     };
     var r;
     if (quest.mode === 'demo') r = M.record(JSON.parse(JSON.stringify(state)), a);
@@ -542,7 +642,7 @@
     if (note && note.indexOf('light') >= 0) ui.pendingLine = maria.lighten();
     c.result = r;
     c.lastAttempt = a;
-    if (quest.mode !== 'demo') { state.activeQuest = (quest.mode === 'quest' || quest.mode === 'diagnostic') ? quest : state.activeQuest; save(); }
+    if (quest.mode !== 'demo') { state.activeQuest = tracked(quest.mode) ? quest : state.activeQuest; save(); }
     return r;
   }
 
@@ -551,12 +651,25 @@
     var s = A.summarise(state, quest);
     if (quest.mode !== 'demo') {
       state.sessions.push(s);
-      if (quest.mode === 'diagnostic') state.profile.diagnosticDone = true;
+      if (quest.mode === 'diagnostic') { state.profile.diagnosticDone = true; if (!state.profile.startDay) state.profile.startDay = today(); }
+      if (tracked(quest.mode)) {
+        // Weekly stamp when the gentle weekly goal is reached; garden milestones.
+        var info = FMQ.planInfo(state);
+        if (info.inPlan && info.daysThisWeek >= info.goal && !state.events.some(function (e) { return e.type === 'stamp' && e.week === info.weekNo; })) {
+          state.events.push({ ts: Date.now(), day: today(), type: 'stamp', week: info.weekNo });
+          s.stamp = info.weekNo;
+        }
+        var grown = A.garden(state).grown;
+        if (FMQ.plan.milestones.indexOf(grown) >= 0 && !state.events.some(function (e) { return e.type === 'milestone' && e.n === grown; })) {
+          state.events.push({ ts: Date.now(), day: today(), type: 'milestone', n: grown });
+          s.milestone = grown;
+        }
+      }
       if (state.activeQuest && state.activeQuest.id === quest.id) state.activeQuest = null;
       save();
     }
     ui.summary = s;
-    go(quest.mode === 'diagnostic' ? 'diagResults' : 'victory');
+    go(quest.mode === 'diagnostic' ? 'diagResults' : quest.mode === 'checkpoint' ? 'checkpointResults' : 'victory');
   }
 
   function focusFeedback() {
@@ -574,7 +687,8 @@
       }
       if (!state.profile.diagnosticDone) { startQuest(FMQ.quest.buildDiagnostic()); return; }
       if (doneToday()) return;
-      startQuest(FMQ.quest.buildDaily(state));
+      var due = FMQ.quest.checkpointDue(state);
+      startQuest(due ? FMQ.quest.buildCheckpoint(state, due) : FMQ.quest.buildDaily(state));
     },
     firstMission: function () {
       var q = FMQ.quest.buildDaily(state);
@@ -584,7 +698,7 @@
     practise: function (id) { startQuest(FMQ.quest.buildPractice(state, id)); },
     demo: function (qid) { startQuest(FMQ.quest.buildDemo(qid)); },
     pause: function () {
-      if (ui.quest && (ui.quest.mode === 'quest' || ui.quest.mode === 'diagnostic')) { state.activeQuest = ui.quest; save(); }
+      if (ui.quest && tracked(ui.quest.mode)) { state.activeQuest = ui.quest; save(); }
       go(ui.quest && ui.quest.mode === 'demo' ? 'parent' : 'home');
     },
     select: function (opt) { if (ui.card.phase !== 'answer') return; ui.card.selected = opt; render(); },
@@ -598,7 +712,7 @@
         c.errorCat = w ? w[0] : (c.bridge ? 'UNDERSTAND' : q.level <= 1 ? 'CONCEPT' : 'PLAN');
         if (c.hints === 0 && c.tries === 1) c.triedAlone = true;
       }
-      if (ui.quest.mode === 'diagnostic') {
+      if (assess(ui.quest.mode)) {
         finalize(ok, false); c.correctNow = ok; c.phase = 'diag'; render(); focusFeedback(); return;
       }
       if (ok) {
@@ -657,7 +771,7 @@
       var quest = ui.quest;
       quest.idx++;
       if (quest.idx >= quest.items.length) { finish(); return; }
-      if (quest.mode === 'quest' || quest.mode === 'diagnostic') { state.activeQuest = quest; save(); }
+      if (tracked(quest.mode)) { state.activeQuest = quest; save(); }
       newCard(); render(); window.scrollTo(0, 0);
     },
     parentSummary: function (id) { ui.modal = id; render(); var m = document.querySelector('.modal-card button:last-child'); if (m) m.focus(); },
@@ -673,7 +787,17 @@
       ui.confirmReset = false; state = FMQ.store.reset(); go('onboarding');
     },
     exportData: function () { ui.exportOpen = !ui.exportOpen; render(); },
-    copyExport: function () { copy(FMQ.store.exportJSON()); }
+    copyExport: function () { state.profile.lastBackup = today(); save(); copy(FMQ.store.exportJSON()); render(); },
+    restoreOpen: function () { ui.restoreOpen = !ui.restoreOpen; ui.confirmRestore = false; ui.restoreMsg = null; render(); },
+    restore: function () {
+      var box = document.getElementById('restorebox'), txt = box ? box.value.trim() : '', data;
+      try { data = JSON.parse(txt); } catch (e) { data = null; }
+      if (!data || !data.profile || !Array.isArray(data.attempts) || !Array.isArray(data.sessions)) {
+        ui.restoreMsg = 'That text is not a complete backup. Copy the whole backup, from the first { to the last }.'; ui.confirmRestore = false; render(); return;
+      }
+      if (!ui.confirmRestore) { ui.pendingRestore = txt; ui.confirmRestore = true; ui.restoreMsg = 'Backup found: ' + data.sessions.length + ' sessions, ' + data.attempts.length + ' answers.'; render(); var b = document.getElementById('restorebox'); if (b) b.value = txt; return; }
+      FMQ.store.replace(data); state = FMQ.store.load(); ui.confirmRestore = false; ui.restoreOpen = false; ui.restoreMsg = null; toast('Progress restored'); render();
+    }
   };
 
   function copy(text) {

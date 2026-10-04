@@ -34,6 +34,26 @@ Deploys as-is to Netlify (`netlify.toml` included). Progress is saved in the bro
 - **COMEBACK WIN 🎉** when a skill that was difficult on an earlier day is solved independently on a changed question.
 - **My Progress**: Maths Journey (🟢 / 🟡 / 🌱), English Power from Maths, Fathiya vs Fathiya, Comeback Wins.
 
+## Built for 3 months of daily use
+
+- **Fresh questions every day.** 70 hand-written questions plus 83 question generators across 17 skills.
+  Each generator builds a complete question from a seed (Malaysian names, foods, places and money),
+  with its own hints, worked steps, Bahasa sentence, simpler English and error-tagged wrong answers.
+  Thousands of variants; hand-written questions return only as spaced review.
+- **12-week journey.** One theme per week (Number Builders → Money Smart → Time Explorer → Fraction Friends →
+  Percent Power → Shape Up → Measure It → Ratio Ranger → Data Detective → Shapes & Grids → Problem Solver →
+  Grand Review). The theme sets the direction; the daily quest still steps back to missing foundations and
+  skips secure skills. After week 12 it continues as spaced review.
+- **Weekend Review Mix.** Saturdays and Sundays give a shorter mix of skills already practised.
+- **Checkpoints in weeks 6 and 12.** The same skills as the first diagnostic with new questions, shown as
+  “Fathiya then vs Fathiya now”. No scores.
+- **Gentle weekly goal and stamps.** Learn on 4 days in a week (any days) to collect that week’s stamp.
+- **My Learning Garden.** One cell per day for 12 weeks: 🌿 learning day, 🌸 comeback day, ⭐ checkpoint.
+  Rest days stay plain soil, never red. Milestones at 5, 10, 20, 30, 45, 60, 75 and 90 days.
+- **New skills.** Shapes & angles (faces/edges/vertices, right angles, parallel/perpendicular lines) and
+  coordinates, plus bar charts, rounding, units of time and mixed units.
+- **Backup and restore** in Parent View, with a reminder when the last backup is over a week old.
+
 ## What the parent sees
 
 Parent View answers five questions: what can she do now, what is improving, what still needs work,
@@ -57,6 +77,8 @@ js/content/learner.js       Learner identity — the only child-specific file
 js/content/curriculum.js    Skills, prerequisites, hidden error categories
 js/content/questions.js     Question bank, hints, worked steps, BM + simple English, confusion ladders
 js/content/vocab.js         Word Bridge dictionary (roles, BM, fading, explanations)
+js/content/generators.js    Question generators (seeded, rebuildable from the stored id)
+js/content/plan.js          12-week plan, checkpoints, milestones
 js/content/demo.js          Sample history (replayed through the real engine)
 js/engine/store.js          Persistence (swappable storage driver)
 js/engine/mastery.js        Outcomes, mastery states, comeback, stars, vocabulary tracking

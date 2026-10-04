@@ -73,6 +73,8 @@ FMQ.store = (function () {
       var f = fresh();
       Object.keys(f).forEach(function (k) { if (state[k] === undefined) state[k] = f[k]; });
       state.profile.name = FMQ.learner.name;
+      // Older records: the 12-week plan starts from the first session.
+      if (!state.profile.startDay && state.sessions.length) state.profile.startDay = state.sessions[0].day;
       return state;
     },
     get: function () { return state || this.load(); },

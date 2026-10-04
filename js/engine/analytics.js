@@ -62,7 +62,7 @@ FMQ.analytics = (function () {
 
   function streak(state) {
     var days = {};
-    state.sessions.forEach(function (s) { if (s.mode === 'quest' || s.mode === 'diagnostic') days[s.day] = true; });
+    state.sessions.forEach(function (s) { if (s.mode === 'quest' || s.mode === 'diagnostic' || s.mode === 'checkpoint') days[s.day] = true; });
     var d = U.dayKey(), n = 0;
     if (!days[d]) d = U.addDays(d, -1); // today not done yet: streak still counts up to yesterday
     while (days[d]) { n++; d = U.addDays(d, -1); }
@@ -151,9 +151,9 @@ FMQ.analytics = (function () {
       (r.wordWins || []).forEach(function (w) { if (words.indexOf(w) < 0) words.push(w); });
     });
     var minutes = Math.max(1, Math.round((end - quest.startedAt) / 60000));
-    var next = quest.mode === 'demo' ? null : FMQ.quest.nextFocusAfter(state, quest);
+    var next = quest.mode === 'demo' || quest.mode === 'checkpoint' ? null : FMQ.quest.nextFocusAfter(state, quest);
     return {
-      id: quest.id, mode: quest.mode, day: quest.day, start: quest.startedAt, end: end, minutes: minutes,
+      id: quest.id, mode: quest.mode, kind: quest.kind || null, checkpoint: quest.checkpoint || null, day: quest.day, start: quest.startedAt, end: end, minutes: minutes,
       focus: quest.focus || null, stepBackFrom: quest.stepBackFrom || null,
       questions: res.length, independent: res.filter(function (r) { return r.outcome === 'independent'; }).length,
       strengthened: strengthened, needed: needed, comebacks: comebacks, mastered: mastered, improvedWords: words,
@@ -161,7 +161,45 @@ FMQ.analytics = (function () {
     };
   }
 
+  /* Then vs Now: first diagnostic compared with a checkpoint, skill by skill. */
+  function checkpointCompare(state, no) {
+    var rows = [];
+    FMQ.diagnosticSet.forEach(function (id) {
+      var skill = FMQ.question(id).skill;
+      var then = state.attempts.filter(function (a) { return a.mode === 'diagnostic' && a.skill === skill; })[0];
+      var now = state.attempts.filter(function (a) { return a.mode === 'checkpoint' && a.checkpoint === no && a.skill === skill; }).slice(-1)[0];
+      if (!now) return;
+      var t = then ? M.outcomeOf(then) : null, n = M.outcomeOf(now);
+      var grew = (t !== 'independent') && n === 'independent';
+      rows.push({ skill: skill, then: t, now: n, grew: grew, kept: t === 'independent' && n === 'independent' });
+    });
+    return rows;
+  }
+  function outcomeWord(o) {
+    return !o ? 'Not tried' : o === 'independent' ? 'Solved alone' : o === 'corrected' ? 'Self-corrected' : (o === 'hint1' || o === 'hint2') ? 'With hints' : o === 'explained' ? 'Needed explanation' : 'Still learning';
+  }
+
+  /* Learning garden: one cell per plan day. */
+  function garden(state) {
+    var start = state.profile.startDay || U.dayKey(), today = U.dayKey(), byDay = {};
+    state.sessions.forEach(function (s) {
+      if (s.mode === 'demo' || s.mode === 'practice') return;
+      var cur = byDay[s.day] || {};
+      if (s.mode === 'checkpoint' || s.mode === 'diagnostic') cur.star = true;
+      if (s.mode === 'quest') cur.quest = true;
+      if (s.comebacks && s.comebacks.length) cur.bloom = true;
+      byDay[s.day] = cur;
+    });
+    var weeks = Math.max(12, Math.floor(U.daysBetween(start, today) / 7) + 1), cells = [];
+    for (var i = 0; i < weeks * 7; i++) {
+      var d = U.addDays(start, i), x = byDay[d];
+      cells.push({ day: d, future: d > today, today: d === today, kind: x ? (x.star ? 'star' : x.bloom ? 'bloom' : 'grow') : 'soil' });
+    }
+    return { cells: cells, weeks: weeks, grown: Object.keys(byDay).length };
+  }
+
   return {
+    checkpointCompare: checkpointCompare, outcomeWord: outcomeWord, garden: garden,
     stats: stats, weeks: weeks, selfCompare: selfCompare, streak: streak, skillGroups: skillGroups,
     vocabList: vocabList, errorPatterns: errorPatterns, observations: observations,
     recommendation: recommendation, summarise: summarise

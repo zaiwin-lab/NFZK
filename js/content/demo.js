@@ -24,6 +24,7 @@ FMQ.loadDemo = function () {
   state.profile.onboarded = true;
   state.profile.diagnosticDone = true;
   state.profile.demo = true;
+  state.profile.startDay = U.addDays(U.dayKey(), -12);
   var today = U.dayKey();
 
   FMQ.demoHistory.forEach(function (d, di) {

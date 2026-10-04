@@ -651,6 +651,12 @@ FMQ.ladders = {
   'data': { intro: 'Let’s read the key first.', steps: [
     { text: 'Key: ★ = 2 stars. How many is ★★★?', options: ['6', '3', '5'], answer: '6', hint: 'Each ★ is worth 2.' },
     { text: 'In a table, the biggest number shows…', options: ['the most', 'the least', 'the middle'], answer: 'the most', hint: 'Bigger number, more things.' } ] },
+  'shapes': { intro: 'Let’s look at the parts of a shape.', steps: [
+    { text: 'A corner of a shape is called a…', options: ['vertex', 'face', 'edge'], answer: 'vertex', hint: 'Vertices are corners.' },
+    { text: 'A square corner, like the corner of a book, is a…', options: ['right angle', 'straight line', 'circle'], answer: 'right angle', hint: 'Right angles look like an L.' } ] },
+  'coordinates': { intro: 'Let’s practise “across, then up”.', steps: [
+    { text: 'In (2, 5), which number tells us how far ACROSS?', options: ['2', '5'], answer: '2', hint: 'The first number is across.' },
+    { text: 'Start at (0, 0). Go 3 across and 1 up. Where are you?', visual: { kind: 'coord', points: [['?', 3, 1]] }, options: ['(3, 1)', '(1, 3)', '(4, 1)'], answer: '(3, 1)', hint: 'Across first, then up.' } ] },
   'word-problems': { intro: 'Let’s break it into steps.', steps: [
     { text: 'A long question often has…', options: ['more than one step', 'only one number', 'no answer'], answer: 'more than one step', hint: 'Look for “first” and “then”.' },
     { text: 'Which should you find first: what you KNOW or what you NEED?', options: ['What I need to find', 'The biggest number'], answer: 'What I need to find', hint: 'WHAT is the question asking?' } ] }

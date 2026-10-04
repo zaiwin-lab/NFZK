@@ -82,6 +82,89 @@ FMQ.visual = (function () {
     return '<div class="v-clock" role="img" aria-label="Digital clock showing ' + v.time + ' hours"><span>' + E(v.time.slice(0, 2)) + '</span><i>:</i><span>' + E(v.time.slice(2)) + '</span><small>hours</small></div>';
   }
 
-  var kinds = { bar: bar, dots: dots, rect: rect, grid: grid, beads: beads, ratioRows: ratioRows, flowers: flowers, picto: picto, table: table, clock24: clock24 };
+  function barchart(v) {
+    var max = Math.max.apply(null, v.bars.map(function (b) { return b[1]; }));
+    var top = Math.ceil((max + v.step) / v.step) * v.step, W = 320, H = 200, L = 36, B = 28, T = 10;
+    var ch = H - B - T, cw = W - L - 8, bw = cw / v.bars.length, s = '';
+    for (var y = 0; y <= top; y += v.step) {
+      var py = T + ch - y / top * ch;
+      s += '<line x1="' + L + '" y1="' + py + '" x2="' + (W - 8) + '" y2="' + py + '" class="v-gridline"/><text x="' + (L - 6) + '" y="' + (py + 4) + '" text-anchor="end" class="v-tick">' + y + '</text>';
+    }
+    v.bars.forEach(function (b, i) {
+      var h = b[1] / top * ch, x = L + i * bw + bw * 0.2;
+      s += '<rect x="' + x + '" y="' + (T + ch - h) + '" width="' + bw * 0.6 + '" height="' + h + '" rx="3" class="v-fill"/>' +
+        '<text x="' + (x + bw * 0.3) + '" y="' + (H - 8) + '" text-anchor="middle" class="v-tick">' + E(b[0]) + '</text>';
+    });
+    s += '<line x1="' + L + '" y1="' + T + '" x2="' + L + '" y2="' + (T + ch) + '" class="v-axis"/><line x1="' + L + '" y1="' + (T + ch) + '" x2="' + (W - 8) + '" y2="' + (T + ch) + '" class="v-axis"/>';
+    return '<figure class="v-chartfig"><figcaption>' + E(v.title) + '</figcaption><svg viewBox="0 0 ' + W + ' ' + H + '" class="v-svg v-barchart" role="img" aria-label="Bar chart: ' +
+      v.bars.map(function (b) { return E(b[0]) + ' ' + b[1]; }).join(', ') + '">' + s + '</svg></figure>';
+  }
+
+  function coord(v) {
+    var n = 6, c = 34, o = 30, top = 26, W = o + n * c + 34, H = top + n * c + 30, s = '';
+    for (var i = 0; i <= n; i++) {
+      s += '<line x1="' + (o + i * c) + '" y1="' + top + '" x2="' + (o + i * c) + '" y2="' + (top + n * c) + '" class="v-gridline"/>';
+      s += '<line x1="' + o + '" y1="' + (top + i * c) + '" x2="' + (o + n * c) + '" y2="' + (top + i * c) + '" class="v-gridline"/>';
+      s += '<text x="' + (o + i * c) + '" y="' + (top + n * c + 18) + '" text-anchor="middle" class="v-tick">' + i + '</text>';
+      s += '<text x="' + (o - 10) + '" y="' + (top + (n - i) * c + 4) + '" text-anchor="end" class="v-tick">' + i + '</text>';
+    }
+    s += '<line x1="' + o + '" y1="' + (top + n * c) + '" x2="' + (o + n * c) + '" y2="' + (top + n * c) + '" class="v-axis"/><line x1="' + o + '" y1="' + top + '" x2="' + o + '" y2="' + (top + n * c) + '" class="v-axis"/>';
+    (v.points || []).forEach(function (p) {
+      var px = o + p[1] * c, py = top + (n - p[2]) * c, right = p[1] >= n - 1 && p[0].length > 1;
+      s += '<circle cx="' + px + '" cy="' + py + '" r="6" class="v-point"/><text x="' + (right ? px - 9 : px + 9) + '" y="' + (py - 9) + '" text-anchor="' + (right ? 'end' : 'start') + '" class="v-label v-label--pt">' + E(p[0]) + '</text>';
+    });
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="v-svg v-coord" role="img" aria-label="Coordinate grid from 0 to 6 with ' +
+      (v.points || []).map(function (p) { return 'point ' + E(p[0]); }).join(', ') + '">' + s + '</svg>';
+  }
+
+  function angle(v) {
+    var cx = 70, cy = 150, r = 120, a = v.deg * Math.PI / 180;
+    var x2 = cx + r * Math.cos(-a), y2 = cy + r * Math.sin(-a);
+    var arc = v.deg === 90 ? '<path d="M' + (cx + 22) + ' ' + cy + ' L' + (cx + 22) + ' ' + (cy - 22) + ' L' + cx + ' ' + (cy - 22) + '" class="v-arc"/>'
+      : '<path d="M' + (cx + 30) + ' ' + cy + ' A30 30 0 0 0 ' + (cx + 30 * Math.cos(-a)) + ' ' + (cy + 30 * Math.sin(-a)) + '" class="v-arc"/>';
+    return '<svg viewBox="0 0 230 170" class="v-svg v-angle" role="img" aria-label="An angle"><line x1="' + cx + '" y1="' + cy + '" x2="' + (cx + r + 30) + '" y2="' + cy + '" class="v-ray"/><line x1="' + cx + '" y1="' + cy + '" x2="' + x2 + '" y2="' + y2 + '" class="v-ray"/>' + arc + '</svg>';
+  }
+
+  function lines(v) {
+    var s;
+    if (v.type === 'parallel') s = '<line x1="30" y1="50" x2="230" y2="' + (50 + v.rot) + '" class="v-ray"/><line x1="30" y1="110" x2="230" y2="' + (110 + v.rot) + '" class="v-ray"/>';
+    else if (v.type === 'perpendicular') s = '<line x1="30" y1="120" x2="230" y2="120" class="v-ray"/><line x1="130" y1="20" x2="130" y2="150" class="v-ray"/><path d="M130 104 L146 104 L146 120" class="v-arc"/>';
+    else s = '<line x1="30" y1="130" x2="230" y2="60" class="v-ray"/><line x1="40" y1="40" x2="220" y2="150" class="v-ray"/>';
+    return '<svg viewBox="0 0 260 170" class="v-svg v-lines" role="img" aria-label="Two lines">' + s + '</svg>';
+  }
+
+  function polygon(v) {
+    var n = v.sides, cx = 90, cy = 90, r = 70, pts = [];
+    if (n === 4) pts = ['20,45', '160,45', '160,135', '20,135'];
+    else for (var i = 0; i < n; i++) { var a = -Math.PI / 2 + i * 2 * Math.PI / n; pts.push((cx + r * Math.cos(a)).toFixed(1) + ',' + (cy + r * Math.sin(a)).toFixed(1)); }
+    return '<svg viewBox="0 0 180 180" class="v-svg v-poly" role="img" aria-label="A shape"><polygon points="' + pts.join(' ') + '" class="v-shape"/></svg>';
+  }
+
+  // Solid shapes with dashed hidden edges, so every face, edge and vertex can be counted.
+  function solid(v) {
+    function L(a, b, hidden) { return '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" class="' + (hidden ? 'v-edge v-edge--hidden' : 'v-edge') + '"/>'; }
+    function box(f, dx, dy) { // f = front rectangle [x, y, w, h]
+      var A = [f[0], f[1]], B = [f[0] + f[2], f[1]], C = [f[0] + f[2], f[1] + f[3]], D = [f[0], f[1] + f[3]];
+      var a = [A[0] + dx, A[1] - dy], b = [B[0] + dx, B[1] - dy], c = [C[0] + dx, C[1] - dy], d = [D[0] + dx, D[1] - dy];
+      return '<path d="M' + A + ' L' + B + ' L' + C + ' L' + D + 'Z" class="v-shape"/><path d="M' + A + ' L' + a + ' L' + b + ' L' + B + 'Z" class="v-shape v-shape--2"/><path d="M' + B + ' L' + b + ' L' + c + ' L' + C + 'Z" class="v-shape v-shape--3"/>' +
+        L(d, a, 1) + L(d, c, 1) + L(d, D, 1);
+    }
+    var art = {
+      'cube': function () { return box([40, 55, 75, 75], 35, 28); },
+      'cuboid': function () { return box([20, 65, 115, 65], 40, 28); },
+      'square-based pyramid': function () {
+        var p = [95, 15], a = [30, 125], b = [125, 125], c = [160, 98], d = [65, 98];
+        return '<path d="M' + a + ' L' + b + ' L' + p + 'Z" class="v-shape"/><path d="M' + b + ' L' + c + ' L' + p + 'Z" class="v-shape v-shape--3"/>' + L(c, d, 1) + L(d, a, 1) + L(d, p, 1);
+      },
+      'triangular prism': function () {
+        var A = [25, 130], B = [75, 50], C = [125, 130], dx = 60, dy = 22, a = [A[0] + dx, A[1] - dy], b = [B[0] + dx, B[1] - dy], c = [C[0] + dx, C[1] - dy];
+        return '<path d="M' + A + ' L' + B + ' L' + C + 'Z" class="v-shape"/><path d="M' + B + ' L' + b + ' L' + c + ' L' + C + 'Z" class="v-shape v-shape--3"/>' + L(A, a, 1) + L(a, b, 1) + L(a, c, 1);
+      }
+    }[v.shape];
+    return '<svg viewBox="0 0 200 150" class="v-svg v-solid" role="img" aria-label="A ' + E(v.shape) + ', with hidden edges shown as dashed lines">' + (art ? art() : '') + '</svg>';
+  }
+
+  var kinds = { bar: bar, dots: dots, rect: rect, grid: grid, beads: beads, ratioRows: ratioRows, flowers: flowers, picto: picto, table: table, clock24: clock24,
+    barchart: barchart, coord: coord, angle: angle, lines: lines, polygon: polygon, solid: solid };
   return function (v) { return v && kinds[v.kind] ? '<div class="visual">' + kinds[v.kind](v) + '</div>' : ''; };
 })();

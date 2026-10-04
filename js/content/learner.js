@@ -12,8 +12,10 @@ FMQ.learner = {
   // Starting focus from the most recent exam. These are hypotheses to test, never labels.
   priorities: [
     'money', 'decimals', 'time24', 'duration', 'percent', 'fractions',
-    'ratio', 'perimeter', 'area', 'measure', 'data', 'word-problems'
+    'ratio', 'perimeter', 'area', 'measure', 'data', 'word-problems', 'shapes', 'coordinates'
   ],
+  // Weekly learning goal: any number of days, never a fixed schedule.
+  weeklyGoal: 4,
   // Target length of one Daily Quest in minutes (for the parent summary).
   sessionMinutes: [15, 20]
 };

@@ -17,8 +17,10 @@ FMQ.curriculum = {
     { id: 'perimeter',     name: 'Perimeter',           icon: '🔲', strand: 'Shapes',      order: 11, prereqs: ['add-sub'] },
     { id: 'area',          name: 'Area',                icon: '🟩', strand: 'Shapes',      order: 12, prereqs: ['times-divide'] },
     { id: 'ratio',         name: 'Ratio',               icon: '⚖️', strand: 'Numbers',     order: 13, prereqs: ['times-divide'] },
-    { id: 'data',          name: 'Tables & pictographs', icon: '📊', strand: 'Data',        order: 14, prereqs: ['times-divide'] },
-    { id: 'word-problems', name: 'Multi-step problems', icon: '🧩', strand: 'Problem solving', order: 15, prereqs: ['money', 'add-sub'] }
+    { id: 'data',          name: 'Tables & graphs',     icon: '📊', strand: 'Data',        order: 14, prereqs: ['times-divide'] },
+    { id: 'shapes',        name: 'Shapes & angles',     icon: '📐', strand: 'Shapes',      order: 15, prereqs: [] },
+    { id: 'coordinates',   name: 'Coordinates',         icon: '📍', strand: 'Shapes',      order: 16, prereqs: [] },
+    { id: 'word-problems', name: 'Multi-step problems', icon: '🧩', strand: 'Problem solving', order: 17, prereqs: ['money', 'add-sub'] }
   ],
 
   // Hidden diagnostic dimensions. Used by the engine and parent view, not shown to the child.

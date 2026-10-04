@@ -125,7 +125,8 @@ FMQ.mastery = (function () {
 
     var after = computeState(state, a.skill);
     sk.state = after;
-    if (after === 'secure' && before !== 'secure') {
+    // Celebrate mastery once per skill; a later dip and recovery is quieter.
+    if (after === 'secure' && before !== 'secure' && !sk.masteredTs) {
       sk.masteredTs = a.ts;
       sk.gap = false;
       result.mastered = true;

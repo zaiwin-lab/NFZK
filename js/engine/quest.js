@@ -24,7 +24,9 @@ FMQ.sections = {
   skill: { title: 'Today’s Skill',   intro: 'Now our main skill for today.' },
   fix:   { title: 'Foundation Fix',  intro: 'Let’s strengthen one building block 🌱.' },
   boss:  { title: 'Mini Boss',       intro: 'One thinking question. Take your time.' },
+  review: { title: 'Review Mix',     intro: 'A mix of skills you have practised. Let’s see what stuck 🌱.' },
   diag:  { title: 'Getting to know you', intro: '' },
+  checkpoint: { title: 'Checkpoint ⭐', intro: '' },
   practice: { title: 'Practice', intro: '' },
   demo:  { title: 'Sample', intro: '' }
 };
@@ -33,23 +35,51 @@ FMQ.quest = (function () {
   var U = FMQ.util, M = FMQ.mastery;
   var MAX_REPAIRS = 2;
 
+  // Generated questions are tracked by template, so a template "rests" after it is used.
+  function seenMaps(state) {
+    var q = {}, t = {}, qn = {}, tn = {};
+    state.attempts.forEach(function (a) {
+      q[a.qid] = a.ts; qn[a.qid] = (qn[a.qid] || 0) + 1;
+      if (a.qid.indexOf('g~') === 0) { var k = a.qid.split('~')[1]; t[k] = a.ts; tn[k] = (tn[k] || 0) + 1; }
+    });
+    return { q: q, t: t, qn: qn, tn: tn };
+  }
+
+  function usedTemplate(exclude, tplId) {
+    return exclude.some(function (id) { return id.indexOf('g~' + tplId + '~') === 0; });
+  }
+
+  // Candidates = hand-written questions + generator templates, nearest level first,
+  // least recently seen next, random tie-break so practice stays fresh for months.
   function pickQuestion(state, skillId, level, exclude, seen) {
-    seen = seen || M.lastSeenMap(state);
-    var pool = FMQ.questions.filter(function (q) { return q.skill === skillId && exclude.indexOf(q.id) < 0; });
+    seen = seen && seen.q ? seen : seenMaps(state);
+    var pool = FMQ.questions.filter(function (q) { return q.skill === skillId && exclude.indexOf(q.id) < 0; })
+      .map(function (q) { return { level: q.level, ts: seen.q[q.id] || 0, uses: seen.qn[q.id] || 0, r: Math.random(), q: q }; });
+    // A template makes new numbers and names each time, so it can be reused about 3× as often.
+    FMQ.gen.templatesFor(skillId).forEach(function (t) {
+      if (usedTemplate(exclude, t.id)) return;
+      pool.push({ level: t.level, ts: seen.t[t.id] || 0, uses: (seen.tn[t.id] || 0) / 3, r: Math.random(), tpl: t.id });
+    });
     if (!pool.length) return null;
     pool.sort(function (a, b) {
       var d = Math.abs(a.level - level) - Math.abs(b.level - level);
       if (d) return d;
-      return (seen[a.id] || 0) - (seen[b.id] || 0);
+      // Within ~2 days, treat as "recently seen"; otherwise prefer the oldest.
+      var ra = a.ts > Date.now() - 2 * 86400000 ? 1 : 0, rb = b.ts > Date.now() - 2 * 86400000 ? 1 : 0;
+      if (ra !== rb) return ra - rb;
+      if (Math.floor(a.uses) !== Math.floor(b.uses)) return a.uses - b.uses;
+      return a.r - b.r;
     });
-    return pool[0];
+    var best = pool[0];
+    return best.q || FMQ.gen.instance(best.tpl);
   }
 
   function pickTwin(state, q, used) {
     var pref = (FMQ.twins[q.id] || []).filter(function (id) { return used.indexOf(id) < 0; });
     if (pref.length) return FMQ.question(pref[0]);
-    var lvl = q.level >= 4 ? 4 : Math.min(3, q.level + 1);
-    return pickQuestion(state, q.skill, lvl, used.concat([q.id]));
+    var ex = used.concat([q.id]);
+    var lvl = q.level >= 4 ? 4 : q.level;
+    return pickQuestion(state, q.skill, lvl, ex) || pickQuestion(state, q.skill, Math.min(3, lvl + 1), used);
   }
 
   function hasEvidence(state, skillId) { return M.attemptsFor(state, skillId).length > 0; }
@@ -59,6 +89,8 @@ FMQ.quest = (function () {
     var states = M.allStates(state);
     var pri = FMQ.learner.priorities;
     var lastFocus = opts.avoid || (state.sessions.filter(function (s) { return s.mode === 'quest'; }).slice(-1)[0] || {}).focus;
+    var info = FMQ.planInfo ? FMQ.planInfo(state) : null;
+    var weekSkills = info && info.inPlan ? info.week.skills : [];
     var best = null;
     FMQ.curriculum.skills.forEach(function (s) {
       if (s.id === 'word-problems') return;
@@ -67,6 +99,8 @@ FMQ.quest = (function () {
       var score = 0;
       var pi = pri.indexOf(s.id);
       if (pi >= 0) score += 20 - pi;
+      var wi = weekSkills.indexOf(s.id);
+      if (wi >= 0) score += 30 - wi * 4; // this week's theme leads, unless already secure
       var atts = M.attemptsFor(state, s.id);
       var last = atts[atts.length - 1];
       if (st === 'building' && last && (last.hints > 0 || last.explained || !last.correct)) score += 12; // repaired, needs reassessment
@@ -86,7 +120,9 @@ FMQ.quest = (function () {
   }
 
   function buildDaily(state) {
-    var seen = M.lastSeenMap(state);
+    var seen = seenMaps(state);
+    var dow = new Date().getDay();
+    if ((dow === 0 || dow === 6) && state.sessions.filter(function (x) { return x.mode === 'quest'; }).length >= 3) return buildReview(state, seen);
     var pick = chooseFocus(state);
     var focus = pick.focus, states = pick.states;
     var used = [], items = [];
@@ -132,19 +168,69 @@ FMQ.quest = (function () {
     if (fixSkill) add(pickQuestion(state, fixSkill, 1, used, seen), 'fix');
 
     // D. Mini Boss — multi-step, linked to today's work when possible.
-    var bosses = FMQ.questions.filter(function (q) { return q.level === 4 && used.indexOf(q.id) < 0; });
-    bosses.sort(function (a, b) {
-      var ra = (a.related || []).indexOf(focus) >= 0 ? 0 : 1, rb = (b.related || []).indexOf(focus) >= 0 ? 0 : 1;
-      if (ra !== rb) return ra - rb;
-      return (seen[a.id] || 0) - (seen[b.id] || 0);
-    });
-    if (bosses[0]) add(bosses[0], 'boss', { changed: true });
+    add(pickBoss(state, [focus], used, seen), 'boss', { changed: true });
 
     return {
       id: U.uid('q'), mode: 'quest', day: U.dayKey(), startedAt: Date.now(),
       focus: focus, stepBackFrom: pick.stepBackFrom, fixSkill: fixSkill,
       items: items, idx: 0, results: [], stars: 0, repairs: 0, struggles: 0, lightened: false
     };
+  }
+
+  function pickBoss(state, skills, used, seen) {
+    seen = seen || seenMaps(state);
+    var pool = FMQ.questions.filter(function (q) { return q.level === 4 && used.indexOf(q.id) < 0; })
+      .map(function (q) { return { rel: q.related || [], ts: seen.q[q.id] || 0, q: q, r: Math.random() }; });
+    FMQ.gen.templates.forEach(function (t) { if (t.level === 4 && !usedTemplate(used, t.id)) pool.push({ rel: t.related || [], ts: seen.t[t.id] || 0, tpl: t.id, r: Math.random() }); });
+    pool.sort(function (a, b) {
+      var ra = skills.some(function (s) { return a.rel.indexOf(s) >= 0; }) ? 0 : 1, rb = skills.some(function (s) { return b.rel.indexOf(s) >= 0; }) ? 0 : 1;
+      if (ra !== rb) return ra - rb;
+      if (Math.abs(a.ts - b.ts) > 86400000) return a.ts - b.ts;
+      return a.r - b.r;
+    });
+    return pool[0] ? (pool[0].q || FMQ.gen.instance(pool[0].tpl)) : null;
+  }
+
+  /* Weekend Review Mix: shorter, spaced retrieval across practised skills. */
+  function buildReview(state, seen) {
+    var states = M.allStates(state), info = FMQ.planInfo(state), used = [], items = [];
+    var lastTs = {};
+    state.attempts.forEach(function (a) { lastTs[a.skill] = a.ts; });
+    var practised = FMQ.curriculum.skills.map(function (s) { return s.id; }).filter(function (id) {
+      return id !== 'word-problems' && states[id] !== 'unknown';
+    });
+    // This week's skills first, then the least recently practised.
+    practised.sort(function (a, b) {
+      var wa = info.week.skills.indexOf(a) >= 0 ? 0 : 1, wb = info.week.skills.indexOf(b) >= 0 ? 0 : 1;
+      return wa - wb || (lastTs[a] || 0) - (lastTs[b] || 0);
+    });
+    function add(q, section, lvl) { if (!q) return; used.push(q.id); items.push({ qid: q.id, skill: q.skill, level: q.level, section: section, changed: q.level >= 3 }); }
+    var easy = practised.filter(function (id) { return states[id] === 'secure'; })[0] || practised[0] || 'add-sub';
+    add(pickQuestion(state, easy, 1, used, seen), 'easy');
+    practised.filter(function (id) { return id !== easy; }).slice(0, 5).forEach(function (id) {
+      add(pickQuestion(state, id, states[id] === 'secure' ? 3 : 2, used, seen), 'review');
+    });
+    add(pickBoss(state, practised.slice(0, 3), used, seen), 'boss');
+    return { id: U.uid('q'), mode: 'quest', kind: 'review', day: U.dayKey(), startedAt: Date.now(), focus: (items[1] || items[0]).skill,
+      items: items, idx: 0, results: [], stars: 0, repairs: 0, struggles: 0, lightened: false };
+  }
+
+  /* Checkpoint: the same skills as the first diagnostic, with new questions. */
+  function buildCheckpoint(state, no) {
+    var used = [], items = [];
+    FMQ.diagnosticSet.forEach(function (id) {
+      var skill = FMQ.question(id).skill;
+      var q = pickQuestion(state, skill, 2, used.concat([id]));
+      if (q) { used.push(q.id); items.push({ qid: q.id, skill: q.skill, level: q.level, section: 'checkpoint', changed: true }); }
+    });
+    return { id: U.uid('c'), mode: 'checkpoint', checkpoint: no, day: U.dayKey(), startedAt: Date.now(), items: items, idx: 0, results: [], stars: 0, repairs: 0, struggles: 0 };
+  }
+
+  function checkpointDue(state) {
+    var info = FMQ.planInfo(state);
+    if (!info.inPlan || !info.week.checkpoint) return null;
+    var no = info.week.checkpoint;
+    return state.sessions.some(function (s) { return s.mode === 'checkpoint' && s.checkpoint === no; }) ? null : no;
   }
 
   function buildDiagnostic() {
@@ -172,7 +258,7 @@ FMQ.quest = (function () {
 
   /* Adapt the remaining queue after a result. Returns a note for MARIA, or null. */
   function adapt(state, quest, item, a) {
-    if (quest.mode === 'diagnostic') return null;
+    if (quest.mode === 'diagnostic' || quest.mode === 'checkpoint') return null;
     var struggle = M.isStruggle(a);
     if (!struggle) return null;
     quest.struggles++;
@@ -203,7 +289,7 @@ FMQ.quest = (function () {
   }
 
   return {
-    buildDaily: buildDaily, buildDiagnostic: buildDiagnostic, buildPractice: buildPractice, buildDemo: buildDemo,
+    buildDaily: buildDaily, buildDiagnostic: buildDiagnostic, buildCheckpoint: buildCheckpoint, checkpointDue: checkpointDue, seenMaps: seenMaps, buildPractice: buildPractice, buildDemo: buildDemo,
     adapt: adapt, chooseFocus: chooseFocus, nextFocusAfter: nextFocusAfter, pickQuestion: pickQuestion
   };
 })();

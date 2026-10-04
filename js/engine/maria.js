@@ -17,14 +17,30 @@ FMQ.maria = (function () {
 
     greeting: function (state) {
       var today = U.dayKey();
-      var done = state.sessions.some(function (s) { return s.day === today && s.mode === 'quest'; });
-      if (done) return { title: 'Quest complete for today ✅', text: 'You worked well today. You’re done. Go enjoy your day 😊' };
+      var done = state.sessions.some(function (s) { return s.day === today && (s.mode === 'quest' || s.mode === 'checkpoint'); });
+      if (done) return { title: 'Quest complete for today ✅', text: U.pick(['You worked well today. You’re done. Go enjoy your day 😊', 'That’s today’s learning done. See you tomorrow 🌱', 'Finished for today. Rest your brain and play 😊']) };
+      var info = FMQ.planInfo(state);
+      if (state.profile.diagnosticDone && FMQ.quest.checkpointDue(state)) {
+        return { title: 'Checkpoint day ⭐', text: 'Today we look back at where you started. Same kind of questions as your first day, but new ones. No pressure. It just shows how much you’ve grown.' };
+      }
+      if (info.bonus && state.profile.diagnosticDone && info.dayOfWeek === 0) {
+        return { title: 'Welcome back, ' + name() + ' 🏆', text: 'You finished the 12-week journey. Now we keep your skills strong with short quests.' };
+      }
+      if (state.profile.diagnosticDone && info.inPlan && info.dayOfWeek === 0 && info.weekNo > 1) {
+        return { title: 'New week, ' + name() + ' 👋', text: 'Week ' + info.weekNo + ' is ' + info.week.icon + ' ' + info.week.title + '. ' + info.week.goal };
+      }
+      var dow = new Date().getDay();
+      if ((dow === 0 || dow === 6) && state.sessions.filter(function (s) { return s.mode === 'quest'; }).length >= 3) {
+        return { title: 'Happy weekend, ' + name() + ' 😊', text: 'Today is a short Review Mix: a few skills you already practised. Let’s see what stuck.' };
+      }
       var aq = state.activeQuest;
       if (aq && aq.day === today && aq.idx > 0) {
         return { title: 'Welcome back, ' + name() + ' 👋', text: 'We paused in the middle. ' + (aq.items.length - aq.idx) + ' questions left. Let’s finish together.' };
       }
       var last = state.sessions.filter(function (s) { return s.mode === 'quest' || s.mode === 'diagnostic'; }).slice(-1)[0];
       if (!last) return { title: 'Hi ' + name() + ' 👋', text: 'Ready to get a little stronger today?' };
+      var gapDays = U.daysBetween(last.day, today);
+      if (gapDays > 1 && gapDays <= 3 && U.pick([0, 1])) return { title: 'Welcome back, ' + name() + ' 🌱', text: 'Let’s continue. This week is ' + info.week.icon + ' ' + info.week.title + '.' };
       var gap = U.daysBetween(last.day, today);
       var did = last.strengthened && last.strengthened.length ? skillName(last.strengthened[0]) : null;
       if (gap <= 1 && did) {
@@ -49,7 +65,7 @@ FMQ.maria = (function () {
           if (ctx.q.level >= 4) return 'You solved a two-step problem by yourself ⭐.';
           if (ctx.q.wrong && Object.keys(ctx.q.wrong).some(function (k) { var c = ctx.q.wrong[k][0]; return c === 'PLAN' || c === 'UNDERSTAND'; }))
             return U.pick(['Good — you chose the correct operation.', 'You solved that without help ⭐.']);
-          return U.pick(['You solved that without help ⭐.', 'Correct. Careful work.']);
+          return U.pick(['You solved that without help ⭐.', 'Correct. Careful work.', 'Yes. You read it carefully and solved it.', 'Correct, and no help needed.']);
         case 'corrected': return 'Nice correction.';
         case 'hint1': return 'Nice recovery. Let’s try the next one by yourself.';
         case 'hint2': return 'You got there with some help. Next time, try one more step on your own.';
@@ -68,7 +84,10 @@ FMQ.maria = (function () {
     lighten: function () { return 'Let’s keep today light. We’ll finish with what you’ve learned.'; },
     comeback: function (skillId) { return 'Comeback Win 🎉 You used to need help with ' + skillName(skillId) + '. Today you solved it by yourself.'; },
     mastered: function (skillId) { return 'You can do ' + skillName(skillId) + ' by yourself now 🏆.'; },
-    end: function () { return U.pick(['Good work today. You’re done. Go enjoy your day 😊.', 'Quest complete. You worked well today. See you next time 😊.']); },
+    end: function () { return U.pick(['Good work today. You’re done. Go enjoy your day 😊.', 'Quest complete. You worked well today. See you next time 😊.', 'That’s enough for today. Your brain did good work 🌱.', 'Done for today. See you tomorrow for the next small step 😊.']); },
+    stamp: function (week) { return 'Week ' + week.n + ' stamp collected: ' + week.icon + ' ' + week.title + '.'; },
+    milestone: function (n) { return n + ' learning days in your garden 🌸. Small steps add up.'; },
+    checkpointDone: function (grew) { return grew > 0 ? 'Look at that. ' + grew + ' skill' + (grew > 1 ? 's' : '') + ' you needed help with before, you solved by yourself today 🌱.' : 'Thank you. Now I know exactly what to practise next 🌱.'; },
     diagnosticDone: function () { return 'Great — now I know where we should begin 🌱.'; }
   };
 })();
