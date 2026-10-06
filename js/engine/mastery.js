@@ -21,7 +21,7 @@ FMQ.mastery = (function () {
     secure:   { icon: '🟢', label: 'I Can Do This', labelBm: 'Saya Boleh', parent: 'Secure', parentBm: 'Kukuh', tone: 'secure' },
     building: { icon: '🟡', label: 'I’m Building This', labelBm: 'Sedang Dibina', parent: 'Building', parentBm: 'Sedang dibina', tone: 'building' },
     practise: { icon: '🌱', label: 'Let’s Practise This', labelBm: 'Mari Berlatih', parent: 'Foundation repair', parentBm: 'Pemulihan asas', tone: 'practise' },
-    unknown:  { icon: '○', label: 'Coming soon', labelBm: 'Akan datang', parent: 'Not yet assessed', parentBm: 'Belum dinilai', tone: 'unknown' }
+    unknown:  { icon: '○', label: 'Not tried yet', labelBm: 'Belum dicuba', parent: 'Not yet assessed', parentBm: 'Belum dinilai', tone: 'unknown' }
   };
 
   function outcomeOf(a) {

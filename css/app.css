@@ -636,3 +636,8 @@ h1 .en2, h2 .en2, .section-tag .en2 { font-family: var(--font-body); }
 .lesson-nav .btn { min-width: 0; padding: 12px 16px; }
 .lesson-nav .btn--ghost { flex: 0 1 auto; }
 .lesson-nav .btn--primary { flex: 1 1 auto; }
+button.jrow { appearance: none; border: 0; border-bottom: 1px solid var(--line); background: transparent; font: inherit; color: inherit; width: 100%; text-align: left; cursor: pointer; }
+.journey li:last-child .jrow { border-bottom: 0; }
+button.jrow:hover .jname { color: var(--teal-ink); }
+.cta .btn--quest + .cta-sub { margin-top: -4px; }
+.cta-done + .btn--quest { margin-top: 12px; }

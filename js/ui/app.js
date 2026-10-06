@@ -76,7 +76,9 @@
     var aq = state.activeQuest && state.activeQuest.day === today() ? state.activeQuest : null;
     var cta;
     if (doneToday()) {
-      cta = '<div class="cta-done"><p class="cta-done-title">' + X('✅ Today’s quest is complete', '✅ Misi hari ini selesai') + '</p><p>' + X('A new quest will be ready tomorrow. You can still read the Guide or do a Latih Tubi.', 'Misi baharu sedia esok. Awak masih boleh baca Panduan atau buat Latih Tubi.') + '</p></div>';
+      cta = '<div class="cta-done"><p class="cta-done-title">' + X('✅ Today’s quest is complete', '✅ Misi hari ini selesai') + '</p><p>' + X('A new quest will be ready tomorrow. You can still read the Guide or do a Latih Tubi.', 'Misi baharu sedia esok. Awak masih boleh baca Panduan atau buat Latih Tubi.') + '</p></div>' +
+        '<button class="btn btn--primary btn--xl btn--quest" data-act="mixDrill"><span>⚡ ' + X('BONUS CHALLENGE', 'CABARAN BONUS') + '</span> <span aria-hidden="true">→</span></button>' +
+        '<p class="cta-sub">' + X('10 mixed questions on new and growing skills', '10 soalan campuran kemahiran baharu dan yang sedang dibina') + '</p>';
     } else {
       var label = aq && aq.idx > 0 ? X('CONTINUE TODAY’S QUEST', 'SAMBUNG MISI HARI INI') : X('START TODAY’S QUEST WITH ' + FMQ.brand().buddy, 'MULA MISI HARI INI BERSAMA ' + FMQ.brand().buddy);
       var preview = '';
@@ -165,7 +167,8 @@
       }).join('') + '</div></section>';
     }).join('');
     return '<main class="screen">' + backBar('⚡ ' + X('Drills', 'Latih Tubi')) +
-      mariaBubble(P(maria.drillStart())) + groups + '</main>';
+      mariaBubble(P(maria.drillStart())) +
+      '<button class="btn btn--primary btn--block" data-act="mixDrill">🎲 ' + X('Mixed Challenge · 10 questions', 'Cabaran Campuran · 10 soalan') + '</button>' + groups + '</main>';
   };
 
   views.drillDone = function () {
@@ -437,7 +440,7 @@
   views.progress = function () {
     var st = M.allStates(state), cmp = A.selfCompare(state), vocab = A.vocabList(state), streak = A.streak(state);
     var journey = FMQ.curriculum.skills.map(function (s) {
-      return '<li class="jrow jrow--' + st[s.id] + '"><span class="jicon" aria-hidden="true">' + s.icon + '</span><span class="jname">' + SN(s.id) + '</span>' + stateChip(st[s.id]) + '</li>';
+      return '<li><button class="jrow jrow--' + st[s.id] + '" data-act="practise" data-arg="' + s.id + '"><span class="jicon" aria-hidden="true">' + s.icon + '</span><span class="jname">' + SN(s.id) + '</span>' + stateChip(st[s.id]) + '</button></li>';
     }).join('');
     var words = vocab.length ? vocab.map(function (v) {
       return '<li class="word word--' + v.status + '"><span aria-hidden="true">' + (v.status === 'known' ? '✅' : '🌱') + '</span> ' + E(v.word) + (lang() !== 'en' && v.bm ? ' <small lang="ms">' + E(v.bm) + '</small>' : '') + '</li>';
@@ -448,7 +451,7 @@
     var cbs = state.events.filter(function (e) { return e.type === 'comeback'; }).slice(-5).reverse();
     var cbHtml = cbs.length ? '<section class="pcard"><h2>' + X('Comeback Wins 🎉', 'Kemenangan Bangkit 🎉') + '</h2><ul class="ticks">' + cbs.map(function (e) { return '<li>' + sicon(e.skill) + ' ' + SN(e.skill) + ' <span class="muted">· ' + fmtDay(e.day) + '</span></li>'; }).join('') + '</ul></section>' : '';
     return '<main class="screen progresspage">' + backBar(X('My Progress', 'Kemajuan Saya')) +
-      '<section class="pcard"><h2>' + X('Maths Journey', 'Perjalanan Matematik') + '</h2><p class="muted">' + X('What can I do now?', 'Apa yang saya boleh buat sekarang?') + '</p><ul class="journey">' + journey + '</ul></section>' +
+      '<section class="pcard"><h2>' + X('Maths Journey', 'Perjalanan Matematik') + '</h2><p class="muted">' + X('What can I do now? Tap a skill to practise it.', 'Apa yang saya boleh buat sekarang? Tekan kemahiran untuk berlatih.') + '</p><ul class="journey">' + journey + '</ul></section>' +
       journeyCard() + gardenCard() +
       '<section class="pcard"><h2>' + X('English Power from Maths', 'Kuasa Bahasa Inggeris dari Matematik') + '</h2><ul class="words">' + words + '</ul></section>' +
       '<section class="pcard"><h2>' + E(FMQ.learner.name) + ' vs ' + E(FMQ.learner.name) + '</h2><p class="muted">' + X('This week compared with before. Nobody else.', 'Minggu ini berbanding sebelum ini. Bukan dengan orang lain.') + '</p>' + vs + '</section>' + cbHtml +
@@ -718,7 +721,17 @@
     openLesson: function (id) { ui.lesson = FMQ.lesson(id); ui.step = 0; go('lesson'); },
     lessonStep: function (d) { ui.step = Math.max(0, Math.min(ui.lesson.steps.length - 1, ui.step + Number(d))); render(); window.scrollTo(0, 0); },
     drillLesson: function (id) { startDrill(id); },
-    drillAgain: function () { startDrill(ui.quest.lessonId); },
+    drillAgain: function () { if (ui.quest.mix) actions.mixDrill(); else startDrill(ui.quest.lessonId); },
+    mixDrill: function () {
+      // Prefer skills she has not tried yet, then ones still growing; fall back to everything.
+      var st = M.allStates(state), rank = { unknown: 0, practise: 1, building: 2, secure: 3 };
+      var skills = FMQ.curriculum.skills.map(function (s) { return s.id; }).filter(function (id) { return FMQ.gen.templatesFor(id).length; })
+        .sort(function (a, b) { return rank[st[a]] - rank[st[b]] || Math.random() - 0.5; }).slice(0, 4);
+      var tpls = [];
+      skills.forEach(function (id) { var all = FMQ.gen.templatesFor(id), easy = all.filter(function (t) { return t.level <= 2; }); (easy.length ? easy : all).slice(0, 3).forEach(function (t) { tpls.push(t.id); }); });
+      var q = FMQ.quest.buildDrill(tpls, 10, ['Mixed Challenge', 'Cabaran Campuran']);
+      q.mix = true; startQuest(q);
+    },
     toggleBasic: function (id) { var k = state.skills[id] = state.skills[id] || {}; k.flag = !k.flag; save(); render(); },
     pause: function () {
       if (ui.quest && tracked(ui.quest.mode)) { state.activeQuest = ui.quest; save(); }
