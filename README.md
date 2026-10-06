@@ -1,101 +1,180 @@
-# Fathiya Maths Quest — Year 4
+# Maths Quest with MARIA
 
-**Learn Maths. Build English. Grow Every Day.**
-Featuring **MARIA**, Fathiya’s Learning Buddy.
+**A calm Year 4 Mathematics and Maths-English learning companion.**
 
-A calm, mobile-first learning portal that helps a Malaysian Year 4 pupil rebuild Mathematics
-foundations and grow Maths English along the way. It follows one loop:
+**Maturity:** Family-use educational prototype with a verified public demonstration  
+**Portfolio category:** Adaptive practice, bilingual learning support and parent-visible progress  
+**Production status:** Static browser application; not a school system, formal assessment or validated educational intervention
 
-**Find the gap → Repair the gap → Re-test differently → Build independence → Move forward.**
+[Open the verified live demonstration](https://mathquest-my.netlify.app)
 
-## Run it
+Maths Quest follows one learning loop:
 
-No build step and no dependencies. Serve the folder with any static server:
+**find the gap → repair the gap → re-test differently → build independence → move forward**
 
-```bash
-python3 -m http.server 8000   # then open http://localhost:8000
-```
+MARIA is the learner-facing companion that guides practice, celebrates recovery and encourages steady daily progress without exposing the answer immediately.
 
-Deploys as-is to Netlify (`netlify.toml` included). Progress is saved in the browser on the device.
+## Learning problem
+
+A child who falls behind can be given more questions without receiving the specific prerequisite help needed to answer them. Language can create a second barrier when mathematical reasoning and English comprehension are developing together.
+
+This product demonstrates a gentler response:
+
+- identify the skill or reading barrier behind an error;
+- step back to a smaller prerequisite;
+- provide progressive hints and worked reasoning;
+- ask a changed question rather than repeat the answer;
+- show progress against the learner's own earlier performance;
+- give a parent a practical view of what is improving and what needs support.
+
+## Intended users
+
+- a Year 4 learner using short supervised daily practice;
+- parents or guardians reviewing progress and supporting a routine;
+- educators evaluating a personalised supplementary-learning concept;
+- product teams adapting the architecture for another learner.
+
+The current repository is a personalised family prototype. It does not claim classroom adoption, curriculum approval or measured learning outcomes.
 
 ## What the child sees
 
-- **Home**: greeting from MARIA, four indicators (🔥 streak, ⭐ stars, 🌱 growing, 🏆 mastered), one main button.
-- **First visit**: a short welcome, then a 10-question diagnostic (no score shown), then
-  “Things you already know” / “Things we’ll make stronger”, then the first mission.
-- **Daily Quest (~15 min)**: Easy Start (2) → Today’s Skill (foundation, normal, changed context) →
-  Foundation Fix (1) → Mini Boss (1 multi-step) → Victory screen. The session always ends.
-- **Signature tools on every question**
-  - 💡 **Help Me**: Notice → Strategy → One step together → 📘 Show Me How. Never the answer first.
-    After an explanation, a *changed question* always follows.
-  - 🌐 **Word Bridge**: English stays visible; matching colour + icon + word pairs (e.g. *spends ↔ membelanjakan*),
-    plus “Explain this word / sentence in BM / simpler English”. Support fades: full → short → tap to reveal → plain.
-  - 😕 **I’m Confused**: steps back to a smaller prerequisite (e.g. what 1/4 means), then returns to the question.
-- **COMEBACK WIN 🎉** when a skill that was difficult on an earlier day is solved independently on a changed question.
-- **My Progress**: Maths Journey (🟢 / 🟡 / 🌱), English Power from Maths, Fathiya vs Fathiya, Comeback Wins.
+- **Home:** greeting from MARIA, streak, stars, growing skills and mastered skills
+- **First visit:** welcome, ten-question diagnostic and strength/growth summary
+- **Daily Quest:** Easy Start, Today's Skill, Foundation Fix, Mini Boss and Victory
+- **Help Me:** staged hints before a worked example, followed by a changed question
+- **Word Bridge:** colour-matched English and Bahasa Malaysia support that fades with progress
+- **I'm Confused:** prerequisite repair before returning to the original skill
+- **Comeback Win:** recognition when a previously difficult skill is solved independently
+- **My Progress:** skill journey, Maths-English growth and self-comparison
 
-## Built for 3 months of daily use
+## Built for a 12-week journey
 
-- **Fresh questions every day.** 70 hand-written questions plus 83 question generators across 17 skills.
-  Each generator builds a complete question from a seed (Malaysian names, foods, places and money),
-  with its own hints, worked steps, Bahasa sentence, simpler English and error-tagged wrong answers.
-  Thousands of variants; hand-written questions return only as spaced review.
-- **12-week journey.** One theme per week (Number Builders → Money Smart → Time Explorer → Fraction Friends →
-  Percent Power → Shape Up → Measure It → Ratio Ranger → Data Detective → Shapes & Grids → Problem Solver →
-  Grand Review). The theme sets the direction; the daily quest still steps back to missing foundations and
-  skips secure skills. After week 12 it continues as spaced review.
-- **Weekend Review Mix.** Saturdays and Sundays give a shorter mix of skills already practised.
-- **Checkpoints in weeks 6 and 12.** The same skills as the first diagnostic with new questions, shown as
-  “Fathiya then vs Fathiya now”. No scores.
-- **Gentle weekly goal and stamps.** Learn on 4 days in a week (any days) to collect that week’s stamp.
-- **My Learning Garden.** One cell per day for 12 weeks: 🌿 learning day, 🌸 comeback day, ⭐ checkpoint.
-  Rest days stay plain soil, never red. Milestones at 5, 10, 20, 30, 45, 60, 75 and 90 days.
-- **New skills.** Shapes & angles (faces/edges/vertices, right angles, parallel/perpendicular lines) and
-  coordinates, plus bar charts, rounding, units of time and mixed units.
-- **Backup and restore** in Parent View, with a reminder when the last backup is over a week old.
+- 70 hand-written questions plus 83 seeded generators across 17 skills
+- Fresh number, name and context variants with hints and worked steps
+- Weekly themes from number foundations through money, time, fractions, measurement, ratio, data, geometry and review
+- Shorter weekend Review Mix sessions
+- New-question checkpoints in weeks 6 and 12
+- A four-day weekly goal, stamps and a 12-week Learning Garden
+- Progress milestones, spaced review and continuing practice after week 12
+- Backup and restore in Parent View
 
 ## What the parent sees
 
-Parent View answers five questions: what can she do now, what is improving, what still needs work,
-why she is struggling (hidden error categories: concept, reading the question, method, calculation,
-checking), and what should happen next. It also has weekly indicators, vocabulary tracking,
-per-session summaries, three sample flows, sample history, export and reset.
+Parent View is designed to answer five questions:
 
-## How mastery works
+1. What can the learner do now?
+2. What is improving?
+3. What still needs work?
+4. Is the difficulty conceptual, linguistic, procedural, calculation-based or checking-related?
+5. What should happen next?
 
-One correct answer is never mastery. A skill is **secure** only when, in the recent window, there is
-an independent correct answer on a core question **and** on a changed/context question, little or no
-help, and no repeated misconception. Outcomes are recorded as ✅ independent, 💡 one hint,
-💡💡 two or more hints, or 📘 learned with explanation.
+It includes weekly indicators, vocabulary tracking, session summaries, the 12-week plan, sample flows and local backup/restore.
+
+## How adaptation works
+
+The portal uses deterministic browser logic, not a generative-AI model.
+
+A skill becomes secure only when recent evidence includes:
+
+- an independently correct core question;
+- an independently correct changed-context question;
+- little or no hint dependence;
+- no repeated misconception in the recent window.
+
+Outcomes distinguish independent work, one hint, multiple hints and learning through an explanation. The quest generator then mixes the weekly direction with prerequisite repair and spaced review.
+
+MARIA's messages are scripted and selected from learner state. No model API sends a child's answers to an external AI service.
+
+## Strategic value
+
+This repository demonstrates how a focused family need can become a reusable digital-learning product:
+
+- pedagogy is expressed as inspectable rules rather than vague “AI tutor” claims;
+- language support is integrated into the Maths task instead of separated from it;
+- progress emphasises self-improvement rather than public ranking;
+- the learner identity is isolated in one configuration file;
+- the static architecture is simple to operate and adapt.
+
+It is strong evidence of child-centred product design, but educational effectiveness still requires supervised evaluation over time.
+
+## Technology
+
+| Layer | Implementation |
+|---|---|
+| Application | Dependency-free static web application |
+| Interface | HTML and responsive CSS |
+| Logic | Vanilla JavaScript modules |
+| Curriculum | Structured skills, prerequisites and question content |
+| Adaptation | Deterministic mastery, hint, review and quest rules |
+| Storage | Browser localStorage |
+| Backend / accounts | Not implemented |
+| External AI API | Not used |
+| Hosting | Netlify |
+
+## Verified live demonstration
+
+[mathquest-my.netlify.app](https://mathquest-my.netlify.app)
+
+Netlify records the current deployment as ready and published on **4 October 2026**. It contains one generated page and static assets, with no deployed serverless or edge functions. The deployment was uploaded through an API workflow and has no attached Git branch, commit reference or commit URL; exact deployment-to-commit parity therefore remains unproven.
+
+## Delivery role
+
+**Ts. Zaiwin Kassim** led the learning-product concept, parent requirements, experience direction and delivery review with the **KOBIS AI Prodigy Team**, using supervised AI-assisted development.
+
+The product was created to support a real family learning need. This does not claim endorsement by a school, teacher, examination body or education authority.
+
+## Responsible use and limitations
+
+- Use the portal as supplementary supervised practice, not a replacement for a teacher or professional learning assessment.
+- A parent or educator should review generated questions, worked steps and translations before broader reuse.
+- Curriculum alignment, accessibility and educational impact have not been independently validated.
+- Progress remains in the current browser unless exported; clearing storage or changing devices can remove it.
+- There are no accounts, cloud backup, teacher controls or multi-device synchronisation.
+- The first-pass Bahasa support and English simplifications may require educator review.
+- Avoid publishing a child's detailed progress or entering unnecessary personal information.
+- Seek qualified educational support when persistent learning difficulties require assessment.
+
+## Development provenance
+
+Four substantive default-branch commits on **4 October 2026** built and extended the product. They use `claude` as GitHub author and committer, so they do not map to the `zaiwin-lab` contribution graph. Their history has not been rewritten.
+
+Future accepted work should be committed with an email linked to `zaiwin-lab`, while retaining an AI co-author trailer when appropriate.
+
+## Run locally
+
+No build step or dependencies are required:
+
+```bash
+python3 -m http.server 8000
+```
+
+Then open `http://localhost:8000`.
 
 ## Project structure
 
-```
+```text
 index.html
-css/app.css                 Visual system (light + dark)
-js/content/learner.js       Learner identity — the only child-specific file
-js/content/curriculum.js    Skills, prerequisites, hidden error categories
-js/content/questions.js     Question bank, hints, worked steps, BM + simple English, confusion ladders
-js/content/vocab.js         Word Bridge dictionary (roles, BM, fading, explanations)
-js/content/generators.js    Question generators (seeded, rebuildable from the stored id)
-js/content/plan.js          12-week plan, checkpoints, milestones
-js/content/demo.js          Sample history (replayed through the real engine)
-js/engine/store.js          Persistence (swappable storage driver)
-js/engine/mastery.js        Outcomes, mastery states, comeback, stars, vocabulary tracking
-js/engine/quest.js          Daily Quest generation and in-session adaptation
-js/engine/maria.js          MARIA’s voice
-js/engine/analytics.js      Progress, self-comparison, parent observations, session summaries
-js/engine/visuals.js        Fraction bars, grids, pictographs, tables, clocks
+css/app.css                 Visual system
+js/content/learner.js       Learner identity and priorities
+js/content/curriculum.js    Skills, prerequisites and error categories
+js/content/questions.js     Question bank, hints, worked steps and language support
+js/content/vocab.js         Word Bridge dictionary and fading rules
+js/content/generators.js    Seeded question generators
+js/content/plan.js          12-week plan, checkpoints and milestones
+js/content/demo.js          Sample history
+js/engine/store.js          Browser persistence and backup
+js/engine/mastery.js        Outcomes, mastery and comeback logic
+js/engine/quest.js          Daily Quest generation and adaptation
+js/engine/maria.js          MARIA's scripted voice
+js/engine/analytics.js      Progress and parent observations
+js/engine/visuals.js        Maths diagrams and visual models
 js/ui/app.js                Views and actions
 ```
 
-### Another learner
+## Adapting for another learner
 
-Copy `js/content/learner.js`, change the name, year, buddy name and starting priorities. The brand
-becomes “[Child Name] Maths Quest — Year N” automatically; each learner’s progress is stored separately.
+Copy `js/content/learner.js`, then change the learner name, year, companion name and starting priorities. Review the curriculum, questions and language content for the learner's actual syllabus and needs before use.
 
-### Adding questions
+## Highest-value next validation
 
-Add an entry to `FMQ.questions` with `skill`, `level` (1 foundation · 2 normal · 3 changed · 4 multi-step),
-options, three hints, `show` steps, `bm` and `simple` sentences, and optional `wrong` nudges tagged with
-an error category. Word Bridge words listed in `vocab` must appear in the question text.
+Run a supervised four-week family pilot, review a sample of every generated question for correctness, and compare independent changed-context performance with the initial diagnostic. Record observations without claiming impact until the evidence supports it.
