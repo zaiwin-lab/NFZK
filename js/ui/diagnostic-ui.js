@@ -86,7 +86,7 @@
     if (answering) foot = '<div class="play-foot dg-foot"><button class="btn btn--primary btn--block" data-act="dgSubmit">' + X('CHECK ANSWER', 'SEMAK JAWAPAN') + '</button>' +
       (d.phase === 'q' ? '<button class="btn btn--ghost btn--block" data-act="dgDontKnow">🤔 ' + X('I don’t know yet', 'Belum tahu') + '</button>' : '<button class="btn btn--ghost btn--block" data-act="dgNext">' + X('Skip for now →', 'Langkau dahulu →') + '</button>') + '</div>';
     else foot = feedback(q, force);
-    return '<article class="qcard qcard--notools" aria-labelledby="qtext">' + qtext(q.q, force) + table + stages + input + hints + '</article>' + foot;
+    return '<article class="qcard qcard--notools" aria-labelledby="qtext">' + qtext(q.q, force) + (q.visual ? FMQ.visual(q.visual) : '') + table + stages + input + hints + '</article>' + foot;
   }
   function feedback(q, force) {
     var d = ui.dg, rec = d.rec, more = rec && (q.hints || []).length > rec.hintsCount, next = '<button class="btn btn--primary btn--block" data-act="dgNext">' + X('Next →', 'Seterusnya →') + '</button>';

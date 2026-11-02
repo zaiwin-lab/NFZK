@@ -9,7 +9,7 @@
 
   /* ───────── helpers ───────── */
   function save() { FMQ.store.save(); }
-  function go(view) { ui.view = view; ui.modal = null; render(); window.scrollTo(0, 0); }
+  function go(view) { if (ui.view === 'lesson' && view !== 'lesson' && FMQ.activity) FMQ.activity.lessonClose(); ui.view = view; ui.modal = null; render(); window.scrollTo(0, 0); }
   function lang() { return I.lang(); }
   function sk(id) { var s = FMQ.skill(id); return s ? [s.name, s.nameBm || s.name] : [id, id]; }
   function SN(id) { var s = sk(id); return X(s[0], s[1]); }
@@ -209,6 +209,7 @@
 
   function startQuest(q) {
     ui.quest = q;
+    if (q.activeAt0 == null && FMQ.activity) q.activeAt0 = FMQ.activity.totalMs();
     if (tracked(q.mode)) { state.activeQuest = q; save(); }
     newCard();
     go('play');
@@ -540,14 +541,15 @@
       var what = s.mode === 'diagnostic' ? X('First diagnostic', 'Diagnostik pertama') : s.mode === 'checkpoint' ? X('Checkpoint ', 'Semakan ') + s.checkpoint + ' ⭐' : s.mode === 'drill' ? '⚡ Latih Tubi · ' + SN(s.focus) : s.mode === 'practice' ? X('Practice · ', 'Latihan · ') + SN(s.focus) : s.kind === 'review' ? X('Weekend Review Mix', 'Ulang Kaji Hujung Minggu') : X('Daily Quest · ', 'Misi Harian · ') + SN(s.focus);
       return '<li><button class="sessrow" data-act="parentSummary" data-arg="' + E(s.id) + '"><span class="sess-day">' + fmtDay(s.day) + '</span><span class="sess-what">' + what + '</span><span class="sess-meta">' + s.minutes + ' min · ' + s.independent + '/' + s.questions + ' ' + x('independent', 'sendiri') + (s.comebacks.length ? ' · 🎉' : '') + '</span></button></li>';
     }).join('');
-    var basics = FMQ.curriculum.skills.filter(function (s) { return s.basic; }).map(function (s) {
+    var basics = FMQ.curriculum.skills.filter(function (s) { return s.basic || (state.skills[s.id] || {}).flagFrom === 'test'; }).map(function (s) {
       var k = state.skills[s.id] || {}, stt = M.computeState(state, s.id);
-      return '<li class="basicrow"><span>' + s.icon + ' ' + SN(s.id) + '</span>' + stateChip(stt) +
+      return '<li class="basicrow"><span>' + s.icon + ' ' + SN(s.id) + (k.flag && k.flagFrom === 'test' ? ' <span class="chip chip--unknown">🩺 ' + X('from level test', 'dari ujian tahap') + '</span>' : '') + '</span>' + stateChip(stt) +
         '<button class="btn ' + (k.flag ? 'btn--soft' : 'btn--ghost') + ' btn--sm" data-act="toggleBasic" data-arg="' + s.id + '" aria-pressed="' + !!k.flag + '">' + (k.flag ? X('✓ Teaching from basics', '✓ Diajar dari asas') : X('Start from basics', 'Mula dari asas')) + '</button></li>';
     }).join('');
 
     return '<main class="screen parent">' + backBar(X('Parent View', 'Paparan Ibu Bapa'), true) +
       '<p class="parent-sub">' + E(name) + ' · ' + X('Year ', 'Tahun ') + FMQ.learner.year + ' · ' + (state.profile.demo ? '<span class="chip chip--unknown">' + X('Sample history loaded', 'Contoh sejarah dimuatkan') + '</span>' : X('Live data', 'Data sebenar')) + '</p>' +
+      (FMQ.logUI ? FMQ.logUI.parentSection() : '') +
       '<section class="psec"><h2>' + X('Language', 'Bahasa') + '</h2><p class="muted small">' + X('BM + English shows every question in both languages. BM only is easiest for understanding; English only builds English. You can switch at any time.', 'BM + Inggeris memaparkan setiap soalan dalam dua bahasa. BM sahaja paling mudah difahami; Inggeris sahaja membina Bahasa Inggeris. Boleh ditukar bila-bila masa.') + '</p>' + langSwitch() + '</section>' +
       (FMQ.diagUI ? FMQ.diagUI.parentSections() : '') +
       '<section class="psec"><h2>' + X('Foundations (catch-up)', 'Asas (pemulihan)') + '</h2><p class="muted small">' + X('If ' + name + ' is unsure about a basic skill, mark it here. Quests will start it from the basics, with Guide lessons and Latih Tubi drills, then move forward when it is secure.', 'Jika ' + name + ' belum faham sesuatu kemahiran asas, tandakan di sini. Misi akan bermula dari asas, dengan Panduan dan Latih Tubi, kemudian bergerak ke hadapan apabila sudah kukuh.') + '</p><ul class="basics">' + basics + '</ul></section>' +
@@ -668,6 +670,9 @@
 
   function finish() {
     var quest = ui.quest, s = A.summarise(state, quest);
+    // Real study time (screen in use), not wall-clock time between start and finish.
+    if (quest.activeAt0 != null && FMQ.activity) s.activeMin = Math.max(1, Math.round((FMQ.activity.totalMs() - quest.activeAt0) / 60000));
+    if (quest.title) s.title = quest.title;
     if (quest.mode !== 'demo') {
       state.sessions.push(s);
       if (quest.mode === 'diagnostic') { state.profile.diagnosticDone = true; if (!state.profile.startDay) state.profile.startDay = today(); }
@@ -720,15 +725,15 @@
     },
     practise: function (id) { startQuest(FMQ.quest.buildPractice(state, id)); },
     demo: function (qid) { startQuest(FMQ.quest.buildDemo(qid)); },
-    openLesson: function (id) { ui.lesson = FMQ.lesson(id); ui.step = 0; go('lesson'); },
-    lessonStep: function (d) { ui.step = Math.max(0, Math.min(ui.lesson.steps.length - 1, ui.step + Number(d))); render(); window.scrollTo(0, 0); },
-    drillLesson: function (id) { startDrill(id); },
+    openLesson: function (id) { if (ui.view === 'lesson' && FMQ.activity) FMQ.activity.lessonClose(); ui.lesson = FMQ.lesson(id); ui.step = 0; go('lesson'); if (FMQ.activity) FMQ.activity.lessonOpen(ui.lesson); },
+    lessonStep: function (d) { ui.step = Math.max(0, Math.min(ui.lesson.steps.length - 1, ui.step + Number(d))); if (FMQ.activity) FMQ.activity.lessonStep(ui.step); render(); window.scrollTo(0, 0); },
+    drillLesson: function (id) { if (FMQ.activity) FMQ.activity.lessonClose(); startDrill(id); },
     drillAgain: function () { if (ui.quest.mix) actions.mixDrill(); else startDrill(ui.quest.lessonId); },
     mixDrill: function () {
       // Prefer skills she has not tried yet, then ones still growing; fall back to everything.
-      var st = M.allStates(state), rank = { unknown: 0, practise: 1, building: 2, secure: 3 };
+      var st = M.allStates(state), rank = { unknown: 0, practise: 1, building: 2, secure: 3 }, fl = function (id) { return (state.skills[id] || {}).flag ? -2 : 0; };
       var skills = FMQ.curriculum.skills.map(function (s) { return s.id; }).filter(function (id) { return FMQ.gen.templatesFor(id).length; })
-        .sort(function (a, b) { return rank[st[a]] - rank[st[b]] || Math.random() - 0.5; }).slice(0, 4);
+        .sort(function (a, b) { return (rank[st[a]] + fl(a)) - (rank[st[b]] + fl(b)) || Math.random() - 0.5; }).slice(0, 4);
       var tpls = [];
       skills.forEach(function (id) { var all = FMQ.gen.templatesFor(id), easy = all.filter(function (t) { return t.level <= 2; }); (easy.length ? easy : all).slice(0, 3).forEach(function (t) { tpls.push(t.id); }); });
       var q = FMQ.quest.buildDrill(tpls, 10, ['Mixed Challenge', 'Cabaran Campuran']);
@@ -859,6 +864,7 @@
     document.title = FMQ.brand().title;
     state = FMQ.store.load();
     state.lastVisitDay = today(); save();
+    if (FMQ.activity) FMQ.activity.start();
     document.addEventListener('click', function (e) {
       var el = e.target.closest('[data-act]');
       if (!el || el.disabled) return;
@@ -878,6 +884,6 @@
 
   FMQ.app = { boot: boot, _ui: ui, _actions: actions, _views: views,
     // Shared helpers for add-on modules (Check My Level diagnostic layer).
-    _h: { avatar: avatar, mariaBubble: mariaBubble, backBar: backBar, langSwitch: langSwitch, go: go, render: function () { render(); }, toast: toast, copy: copy, state: function () { return state; } } };
+    _h: { fmtDay: fmtDay, SN: SN, sicon: sicon, avatar: avatar, mariaBubble: mariaBubble, backBar: backBar, langSwitch: langSwitch, go: go, render: function () { render(); }, toast: toast, copy: copy, state: function () { return state; } } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

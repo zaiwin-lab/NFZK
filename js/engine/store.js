@@ -84,9 +84,17 @@ FMQ.store = (function () {
     },
     get: function () { return state || this.load(); },
     save: function () { if (state) FMQ.storageDriver.set(key(), state); },
-    replace: function (next) { state = next; this.save(); },
+    replace: function (next) {
+      // A combined backup also carries the Check My Level log: merge it (nothing is deleted).
+      if (next && next.diagLog) { if (FMQ.diagEngine) FMQ.diagEngine.importJSON(JSON.stringify(next.diagLog)); delete next.diagLog; }
+      state = next; this.save();
+    },
     reset: function () { state = fresh(); this.save(); return state; },
     fresh: fresh,
-    exportJSON: function () { return JSON.stringify(state, null, 2); }
+    exportJSON: function () {
+      var out = Object.assign({}, state);
+      if (FMQ.diagEngine) out.diagLog = FMQ.diagEngine.get();
+      return JSON.stringify(out, null, 2);
+    }
   };
 })();

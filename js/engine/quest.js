@@ -124,6 +124,7 @@ FMQ.quest = (function () {
       if (st === 'unknown') score += wi >= 0 ? 16 : 4; // untested theme skills get their turn this week
       if (state.skills[s.id] && state.skills[s.id].gap) score += 6;
       // Catch-up: foundations come first when they are missing or flagged by a parent.
+      if (!s.basic && state.skills[s.id] && state.skills[s.id].flag) score += 40; // weak in a Check My Level test
       if (s.basic) {
         if (state.skills[s.id] && state.skills[s.id].flag) score += 50;
         if (st === 'practise' && atts.length) score += 45;

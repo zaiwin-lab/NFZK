@@ -641,3 +641,30 @@ button.jrow { appearance: none; border: 0; border-bottom: 1px solid var(--line);
 button.jrow:hover .jname { color: var(--teal-ink); }
 .cta .btn--quest + .cta-sub { margin-top: -4px; }
 .cta-done + .btn--quest { margin-top: 12px; }
+
+/* ───────── Daily Log ───────── */
+.lg-kpis { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.lg-chart { display: flex; align-items: flex-end; gap: 4px; height: 140px; padding: 18px 0 0; border-bottom: 1px solid var(--line); }
+.lg-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; position: relative; }
+.lg-bar { width: 100%; max-width: 26px; background: var(--amber-soft); border: 1.5px solid var(--amber); border-radius: 6px 6px 2px 2px; }
+.lg-bar.is-goal { background: var(--green); border-color: var(--green); }
+.lg-bar.is-est { border-style: dashed; }
+.lg-val { font-size: .6875rem; color: var(--muted); font-variant-numeric: tabular-nums; margin-bottom: 2px; }
+.lg-day { position: absolute; bottom: -20px; font-size: .75rem; color: var(--muted); }
+.lg-col.is-today .lg-day { color: var(--teal-ink); font-weight: 700; }
+.lg-sec .legend { margin-top: 22px; }
+.lg-key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--amber-soft); border: 1.5px solid var(--amber); margin-right: 6px; vertical-align: -1px; }
+.lg-key.is-goal { background: var(--green); border-color: var(--green); }
+.lg-items { list-style: none; margin: 4px 0 8px; padding: 0 0 0 4px; display: flex; flex-direction: column; gap: 2px; }
+.lg-item { display: grid; grid-template-columns: 4.6em 1.6em 1fr auto; align-items: start; gap: 6px; padding: 8px 6px; border-radius: 10px; }
+.lg-item:nth-child(odd) { background: var(--bg); }
+.lg-time { font-size: .8125rem; color: var(--muted); font-variant-numeric: tabular-nums; padding-top: 2px; }
+.lg-what { display: flex; flex-direction: column; min-width: 0; }
+.lg-what b { font-weight: 600; font-size: .9375rem; }
+.lg-what small { color: var(--ink-2); font-size: .8125rem; }
+.lg-what .en2 { font-size: .75rem; }
+.lg-min { font-size: .8125rem; font-weight: 600; color: var(--teal-ink); white-space: nowrap; padding-top: 2px; }
+.lg-day-row { list-style: none; }
+.lg-kpis { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.lg-kpis .kpi { padding: 12px 10px; min-width: 0; }
+.lg-kpis .kpi-val { font-size: 1.25rem; }
