@@ -1,0 +1,38 @@
+/* Check My Level — additions only. Reuses app.css tokens; changes no existing rule. */
+.dg-home { display: flex; }
+.dg-homecard { appearance: none; border: 0; cursor: pointer; width: 100%; text-align: left; display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: var(--r-lg);
+  background: linear-gradient(140deg, var(--violet-soft), var(--teal-soft)); color: var(--ink); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--violet) 30%, transparent); font: inherit; }
+.dg-homecard:hover { box-shadow: inset 0 0 0 2px var(--violet); }
+.dg-homeicon { font-size: 2rem; line-height: 1; }
+.dg-hometext { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.dg-hometext b { font-family: var(--font-display); font-size: 1.1875rem; font-weight: 800; }
+.dg-hometext small { color: var(--ink-2); font-size: .9rem; }
+.dg-hometext .dg-resume { color: var(--violet); font-weight: 600; }
+.dg-hometext .en2 { display: block; font-size: .8em; color: var(--muted); font-weight: 400; }
+.dg-tests { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.dg-test { display: flex; gap: 14px; background: var(--surface); border-radius: var(--r-md); padding: 14px 16px; box-shadow: inset 0 0 0 1px var(--line); }
+.dg-test.is-soon { opacity: .65; }
+.dg-ticon { font-size: 1.75rem; line-height: 1.2; }
+.dg-tbody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.dg-ttitle { font-family: var(--font-display); font-weight: 700; font-size: 1.0625rem; }
+.dg-tact { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+.dg-mini { width: 100%; }
+.dg-skills, .dg-dims, .dg-concerns { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.dg-skills li { display: flex; justify-content: space-between; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ticks.dg-results li { display: flex; justify-content: space-between; gap: 8px; align-items: center; flex-wrap: wrap; text-align: left; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+.wh-steps li.is-now { background: var(--violet); color: var(--on-accent); }
+.dg-lbl { font-weight: 600; font-size: .9375rem; }
+.dg-input { font: inherit; font-size: 1.375rem; padding: 12px 14px; border-radius: var(--r-sm); border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); width: 100%; }
+.dg-input:focus, .dg-text:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+.dg-text { min-height: 96px; }
+.dg-foot { display: flex; flex-direction: column; gap: 8px; }
+.dg-conf { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.dg-confbtn { appearance: none; border: 0; cursor: pointer; font: inherit; font-size: .8125rem; background: var(--bg-2); color: var(--ink); border-radius: var(--r-md); padding: 10px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.dg-confbtn:hover { box-shadow: inset 0 0 0 2px var(--teal); }
+.dg-emoji { font-size: 1.875rem; }
+.dg-parent { display: flex; flex-direction: column; gap: 14px; }
+.dg-parent-h { font-family: var(--font-display); font-size: 1.25rem; margin-top: 6px; }
+.dg-dim { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; border-bottom: 1px dashed var(--line); padding-bottom: 8px; }
+.dg-ev { padding: 8px 12px 4px; background: var(--bg-2); border-radius: var(--r-sm); margin-top: 6px; }
+.dg-ev ul { margin: 4px 0 8px; padding-left: 18px; }
+.dg-hist td, .dg-hist th { vertical-align: top; }

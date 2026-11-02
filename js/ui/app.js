@@ -109,6 +109,7 @@
         stat('🏆', groups.secure.length, X('Skills Mastered', 'Kemahiran Dikuasai')) +
       '</section>' +
       '<section class="cta">' + cta + '</section>' +
+      (FMQ.diagUI ? FMQ.diagUI.homeCard() : '') +
       (state.profile.diagnosticDone ? weekCard() : '') +
       '<nav class="secondary" aria-label="More">' +
         '<div class="row2">' + navBtn('guide', '📘', X('Learn from basics', 'Panduan dari asas')) + navBtn('drills', '⚡', X('Drills', 'Latih Tubi')) + '</div>' +
@@ -548,6 +549,7 @@
     return '<main class="screen parent">' + backBar(X('Parent View', 'Paparan Ibu Bapa'), true) +
       '<p class="parent-sub">' + E(name) + ' · ' + X('Year ', 'Tahun ') + FMQ.learner.year + ' · ' + (state.profile.demo ? '<span class="chip chip--unknown">' + X('Sample history loaded', 'Contoh sejarah dimuatkan') + '</span>' : X('Live data', 'Data sebenar')) + '</p>' +
       '<section class="psec"><h2>' + X('Language', 'Bahasa') + '</h2><p class="muted small">' + X('BM + English shows every question in both languages. BM only is easiest for understanding; English only builds English. You can switch at any time.', 'BM + Inggeris memaparkan setiap soalan dalam dua bahasa. BM sahaja paling mudah difahami; Inggeris sahaja membina Bahasa Inggeris. Boleh ditukar bila-bila masa.') + '</p>' + langSwitch() + '</section>' +
+      (FMQ.diagUI ? FMQ.diagUI.parentSections() : '') +
       '<section class="psec"><h2>' + X('Foundations (catch-up)', 'Asas (pemulihan)') + '</h2><p class="muted small">' + X('If ' + name + ' is unsure about a basic skill, mark it here. Quests will start it from the basics, with Guide lessons and Latih Tubi drills, then move forward when it is secure.', 'Jika ' + name + ' belum faham sesuatu kemahiran asas, tandakan di sini. Misi akan bermula dari asas, dengan Panduan dan Latih Tubi, kemudian bergerak ke hadapan apabila sudah kukuh.') + '</p><ul class="basics">' + basics + '</ul></section>' +
       '<section class="psec"><h2>' + X('This Week', 'Minggu Ini') + '</h2><div class="kpis">' + kpis + '</div></section>' +
       '<section class="psec"><h2>' + X('What can ' + name + ' do now?', 'Apa yang ' + name + ' boleh buat sekarang?') + '</h2><div class="skillcols">' +
@@ -874,6 +876,8 @@
     render();
   }
 
-  FMQ.app = { boot: boot, _ui: ui, _actions: actions };
+  FMQ.app = { boot: boot, _ui: ui, _actions: actions, _views: views,
+    // Shared helpers for add-on modules (Check My Level diagnostic layer).
+    _h: { avatar: avatar, mariaBubble: mariaBubble, backBar: backBar, langSwitch: langSwitch, go: go, render: function () { render(); }, toast: toast, copy: copy, state: function () { return state; } } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
